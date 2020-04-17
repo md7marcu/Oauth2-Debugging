@@ -1,20 +1,20 @@
 // lib/app.ts
 import * as express from "express";
 import * as bodyParser from "body-parser";
-import { UserRoutes } from "./routes/UserRoutes";
+import { AuthRoutes } from "./routes/AuthRoutes";
 import * as mongoose from "mongoose";
 
 class App {
 
     public app: express.Application;
-    public userRoutePrv: UserRoutes = new UserRoutes();
+    public authRoute: AuthRoutes = new AuthRoutes();
     public mongoUrl = process.env.MONGODB_URL;
 
     constructor() {
         this.app = express();
         this.config();
         this.mongoSetup(this.mongoUrl);
-        this.userRoutePrv.routes(this.app);
+        this.authRoute.routes(this.app);
     }
 
     private config(): void {

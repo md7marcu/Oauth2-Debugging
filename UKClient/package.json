@@ -1,13 +1,13 @@
 {
-  "name": "typescriptjwt",
+  "name": "UKClient",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "dev": "env-cmd -f ./config/.env ts-node-dev ./lib/server.ts",
-    "start": "env-cmd -f ./config/.env nodemon ./dist/server.js",
-    "prod": "env-cmd -f ./config/.env npm run build && npm run start",
+    "dev": "./node_modules/.bin/env-cmd -f ./config/.env ts-node-dev ./lib/server.ts",
+    "start": "./node_modules/.bin/env-cmd  -f ./config/.env nodemon ./dist/server.js",
+    "prod": "./node_modules/.bin/env-cmd  -f ./config/.env npm run build && npm run start",
     "test": "mocha -r ts-node/register test/**/*.spec.ts",
     "test-dev": "nodemon --watch . --ext ts --exec \"mocha -r ts-node/register test/**/*.spec.ts\""
   },

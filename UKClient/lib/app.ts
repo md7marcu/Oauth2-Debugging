@@ -1,23 +1,25 @@
 // lib/app.ts
 import * as express from "express";
 import * as bodyParser from "body-parser";
-import { UserRoutes } from "./routes/UserRoutes";
+import { ClientRoutes } from "./routes/ClientRoutes";
 import * as mongoose from "mongoose";
 
 class App {
 
     public app: express.Application;
-    public userRoutePrv: UserRoutes = new UserRoutes();
+    public clientRoute: ClientRoutes = new ClientRoutes();
     public mongoUrl = process.env.MONGODB_URL;
 
     constructor() {
         this.app = express();
         this.config();
         this.mongoSetup(this.mongoUrl);
-        this.userRoutePrv.routes(this.app);
+        this.clientRoute.routes(this.app);
     }
 
     private config(): void {
+        // support static content from public folder
+        this.app.use(express.static("public"));
         // support application/json type post data
         this.app.use(bodyParser.json());
         // support application/x-www-form-urlencoded post data
