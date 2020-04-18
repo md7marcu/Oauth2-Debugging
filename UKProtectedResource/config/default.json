@@ -1,0 +1,8 @@
+{    
+    "verifyIssuer": true,
+    "issuer": "",
+    "verifyAudience": true,
+    "audience": "",
+    "ignoreNotBefore": false,
+    "ignoreExpiration": false
+}
