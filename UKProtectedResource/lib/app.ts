@@ -13,7 +13,10 @@ class App {
     constructor() {
         this.app = express();
         this.config();
-        this.mongoSetup(this.mongoUrl);
+
+        if (this.mongoUrl) {
+            this.mongoSetup(this.mongoUrl);
+        }
         this.protectedRoute.routes(this.app);
     }
 

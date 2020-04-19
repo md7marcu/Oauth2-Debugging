@@ -1,9 +1,17 @@
-
-interface Config {
-    verifyIssuer: boolean,
-    issuer: string,
-    verifyAudience: boolean,
+/* tslint:disable */
+/* eslint-disable */
+declare module "node-config-ts" {
+  interface IConfig {
+    issuer: string
     audience: string
-    ignoreNotBefore: boolean,
+    verifyIssuer: boolean
+    verifyAudience: boolean
+    ignoreNotBefore: boolean
     ignoreExpiration: boolean
+    algorithm: string
+    serverCert: string
+    serverKey: string
   }
+  export const config: Config
+  export type Config = IConfig
+}
