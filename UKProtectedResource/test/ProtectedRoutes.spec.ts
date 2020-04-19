@@ -25,6 +25,7 @@ describe("Express routes", () => {
             .expect(401,   done);
     });
 
+    // Called with valid token and correct scope - return the protected resource
     it("Should return the weight (3) when called with a valid token", (done) => {
         let payload = {
             iss: config.issuer,
@@ -40,6 +41,7 @@ describe("Express routes", () => {
         .expect(200, { weight: "3" }, done);
     });
 
+    // Troubleshooting key's
     it("Should verify the signature", () => {
         let serverCert = Fs.readFileSync("./config/cert.pem").toString();
         let publicKey = pki.publicKeyToPem(pki.certificateFromPem(serverCert).publicKey);
