@@ -19,29 +19,7 @@ describe("Express routes", () => {
         .expect(200);
     });
 
-    it("Should return 401 when no jwt token supplied", (done) => {
-        Supertest(app)
-            .get("/weight")
-            .expect(401,   done);
-    });
-
-    // Called with valid token and correct scope - return the protected resource
-    it("Should return the weight (3) when called with a valid token", (done) => {
-        let payload = {
-            iss: config.issuer,
-            aud: config.audience,
-            scope: "weight",
-            exp: Math.floor(Date.now() / 1000) + (60 * 60), // one hour expiration
-            iat: Math.floor(Date.now() / 1000) - 30, // 30 seconds ago,
-        };
-
-        Supertest(app)
-        .get("/weight")
-        .set("Authorization", "Bearer " + createToken(payload))
-        .expect(200, { weight: "3" }, done);
-    });
-
-    // Troubleshooting key's
+    // // Troubleshooting key's
     it("Should verify the signature", () => {
         let serverCert = Fs.readFileSync("./config/cert.pem").toString();
         let publicKey = pki.publicKeyToPem(pki.certificateFromPem(serverCert).publicKey);
@@ -57,7 +35,21 @@ describe("Express routes", () => {
         expect(true).to.be.true;
     });
 
-    const createToken = (options: IVerifyOptions): string => {
-        return sign(options, Fs.readFileSync(config.serverKey).toString(), { algorithm: config.algorithm });
-    };
+    it("Should return 200 on authorize endpoint", () => {
+        Supertest(app)
+        .get("/authorize")
+        .expect(200);
+    });
+
+    it("Should return 200 on approve endpoint", () => {
+        Supertest(app)
+        .get("/approve")
+        .expect(200);
+    });
+
+    it("Should return 200 on token endpoint", () => {
+        Supertest(app)
+        .get("/token")
+        .expect(200);
+    });
 });

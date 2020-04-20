@@ -1,0 +1,12 @@
+{    
+    "issuer": "authorize.ultrakompis.com",
+    "audience": "api.ultrakompis.com",
+    "algorithm": "RS256",
+    "authorizationEndpoint": "https://localhost:3001/authorize",
+    "tokenEndpoint": "https://localhost:3001/token",
+    "scopes": "weight",
+    "verifyRedirectURL": true,
+    "verifyClientId": true,
+    "verifyScope": true,
+    "clearRequestId": true
+}
