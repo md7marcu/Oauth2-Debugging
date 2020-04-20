@@ -5,7 +5,7 @@ import * as fs from "fs";
 import * as Debug from "debug";
 const debug = Debug("ProtectedRoutes");
 
-const PORT = process.env.port;
+const PORT = process.env.PORT;
 
 const httpsOptions = {
     key: fs.readFileSync("./config/key.pem"),
