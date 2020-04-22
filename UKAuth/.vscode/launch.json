@@ -4,6 +4,23 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        {  
+            "name":"Launch via nodemon",
+            "type":"node",
+            "request":"launch",
+            "protocol":"inspector",
+            "cwd":"${workspaceRoot}",
+            "runtimeExecutable":"${workspaceRoot}/node_modules/.bin/env-cmd",
+            "runtimeArgs": [               
+                "-f",
+                "${workspaceRoot}/config/.env",
+                "${workspaceRoot}/node_modules/.bin/ts-node-dev",
+                "${workspaceRoot}/lib/server.ts",
+            ],
+            "port": 9229,
+            "restart":true
+         },
+
         {
             "type": "node",
             "request": "attach",
@@ -13,21 +30,21 @@
             "localRoot": "${workspaceFolder}",
             "remoteRoot": "/usr/src/app/",
             "protocol": "inspector",
-            "restart": true, // if nodemon restarts - reconnect the debugger,
-            "sourceMaps": true
+            "restart": true // if nodemon restarts - reconnect the debugger,
         },
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "program": "${workspaceFolder}\\dev)",
+            "name": "Debug TypeScript in Node.js",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/lib/server.ts",
+            "cwd": "${workspaceFolder}",
+            "protocol": "inspector",
+            "env": { "PORT":"3002" },
             "outFiles": [
-                "${workspaceFolder}/**/*.js"
-            ]
-        },
+              "${workspaceFolder}/dist/**/*.js"
+            ],
+          },
         {
             "type": "node",
             "request": "launch",

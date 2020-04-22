@@ -18,12 +18,11 @@ export class ResourceRoutes {
 
     public routes(app: Application): void {
 
-        app.get("/hello", async(req: Request, res: Response) => {
-            debug("hello world endpoint called.");
-            res.send("World!");
+        app.get("/alive", async(req: IRequest, res: Response) => {
+            res.send("Success!");
         });
 
-        app.get("/weight", this.retrieveAccessToken, this.requireAccessToken, async(req: IRequest, res: Response, next: NextFunction) => {            
+        app.get("/weight", this.retrieveAccessToken, this.requireAccessToken, async(req: IRequest, res: Response, next: NextFunction) => {
             debug("weight endpoint called.");
 
             // tslint:disable-next-line:whitespace

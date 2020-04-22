@@ -4,9 +4,22 @@
     "algorithm": "RS256",
     "authorizationEndpoint": "https://localhost:3001/authorize",
     "tokenEndpoint": "https://localhost:3001/token",
+    "aliveEndpoint": "https://localhost:3001/alive",
     "scopes": "weight",
-    "verifyRedirectURL": true,
+    "verifyRedirectUrl": true,
     "verifyClientId": true,
     "verifyScope": true,
-    "clearRequestId": true
+    "verifyCode": true,
+    "validateScope": true,
+    "clearAuthorizationCode": true,
+    "clearRequestId": true,
+    "tokenLength": 16,
+    "clients": [
+        {
+            "client_id": "ukauth-client",
+            "client_secret": "secretsecretsecret",
+            "redirect_uris": ["http://localhost:3001/callback"],
+            "scopes": ["weight", "something", "else"]
+        }
+    ]
 }

@@ -1,0 +1,50 @@
+body {
+    padding: 40px 10px;
+    background-color: #eee;
+  }
+  .listing-reg h1 {
+    text-align: center;
+    margin: 0 0 2rem;
+  }
+  
+  /* allow request */
+  .sub-heading {
+    padding-top: 50px;
+    padding-bottom: 10px;
+  }
+
+  .scope-label {
+    padding-top: 5px;  
+    padding-left: 10px;  
+  }
+
+  /* css for errors*/
+
+  .my-errors {
+    content: "! Error : ";
+    margin: 0 auto;
+    padding: 0;
+    list-style: none;
+    color: #f00;
+    font-size: 1.2rem;
+    display: table;
+  }
+
+  /* Styles for listing table */
+  .listing-table {
+    width: 100%;
+  }
+  .listing-table th,
+  .listing-table td {
+    padding: 10px;
+    border-bottom: 1px solid #666;
+  }
+  .listing-table th {
+    background: #000;
+    color: #fff;
+  }
+  .listing-table td:first-child,
+  .listing-table th:first-child {
+    border-right: 1px solid #666;
+  }
+  

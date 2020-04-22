@@ -6,6 +6,17 @@
     "configurations": [
         {
             "type": "node",
+            "request": "attach",
+            "name": "Docker: Attach to Node",
+            "port": 9227,
+            "address": "localhost",
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "/usr/src/app/",
+            "protocol": "inspector",
+            "restart": true // if nodemon restarts - reconnect the debugger,
+        },
+        {
+            "type": "node",
             "request": "launch",
             "name": "Launch Program",
             "skipFiles": [

@@ -1,0 +1,28 @@
+extends layout    
+
+
+block content
+    div.jumbotron
+        div.container-fluid
+            h1.display-4 Authorization Server
+            p
+            h2.sub-heading Allow Authentication Request From:
+            p
+            if client.client_id
+                h4 Client Id: #{client.client_id}
+            if client.redirect_uris
+                h4 Redirect URI: #{client.redirect_uris}
+            p
+            form(method="POST" action="allowRequest")
+                input(type="hidden" name="requestId" value="#{requestId}")
+
+                if client.scopes 
+                    h3.sub-heading  Allow access to the following scopes:
+                    div
+                      each scope, index in client.scopes    
+                        p                      
+                            label.scope-label #[input.checkbox.scope-checkbox(type="checkbox" id=index name="#{scope}" checked )] #{scope}
+                    div
+                    button.btn.btn-primary.col-sm-offset-2(type='submit') Allow
+
+                

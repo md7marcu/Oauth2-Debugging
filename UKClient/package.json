@@ -5,11 +5,12 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "dev": "./node_modules/.bin/env-cmd -f ./config/.env ts-node-dev ./lib/server.ts",
-    "start": "./node_modules/.bin/env-cmd  -f ./config/.env nodemon ./dist/server.js",
-    "prod": "./node_modules/.bin/env-cmd  -f ./config/.env npm run build && npm run start",
+    "dev": "env-cmd -f ./config/.env ts-node-dev --inspect=0.0.0.0:9229 -- ./lib/server.ts",
+    "start": "env-cmd -f ./config/.env nodemon ./dist/server.js",
+    "prod": "env-cmd -f ./config/.env npm run build && npm run start",
     "test": "mocha -r ts-node/register test/**/*.spec.ts",
-    "test-dev": "nodemon --watch . --ext ts --exec \"mocha -r ts-node/register test/**/*.spec.ts\""
+    "test-dev": "nodemon --watch . --ext ts --exec \"mocha -r ts-node/register test/**/*.spec.ts\"",
+    "postinstall": "node-config-ts"
   },
   "author": "",
   "license": "ISC",
