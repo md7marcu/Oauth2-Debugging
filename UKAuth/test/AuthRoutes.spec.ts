@@ -153,7 +153,7 @@ describe("Express routes", () => {
             {
                 clientId: config.clients[0].clientId,
                 clientSecret: config.clients[0].clientSecret,
-                grantType: "authorizationCode",
+                grantType: config.authorizationCodeGrant,
                 code: "invalidCode",
             });
 
@@ -173,11 +173,57 @@ describe("Express routes", () => {
             {
                 clientId: clientId,
                 clientSecret: config.clients[0].clientSecret,
-                grantType: "authorizationCode",
-                code: code,
+                grantType: config.authorizationCodeGrant,
+                authorizationCode: code,
             });
 
         expect(response.status).to.be.equal(200);
         expect(response.text).to.contain("refreshToken");
+    });
+
+    // Not very good test, hacks too much
+    it("Should return 400 when called with refresh_token grant with erroneous clientId", async () => {
+        let code = "abc123";
+        let clientId = config.clients[0].clientId;
+        db.saveAuthorizationCode(code, {request: {clientId: clientId, scopes: ["weight"]}});
+        db.saveRefreshToken("cba321", "3232", ["weight"]);
+
+        const response = await Supertest(app)
+        .post("/token")
+        .type("form")
+        .send(
+            {
+                clientId: clientId,
+                clientSecret: config.clients[0].clientSecret,
+                grantType: config.refreshTokenGrant,
+                refreshToken: "cba321",
+            });
+
+        expect(response.status).to.be.equal(400);
+        expect(response.text).to.contain("Invalid refresh token.");
+    });
+
+    it("Should return new access token upon refresh", async () => {
+        let code = "abc123";
+        let clientId = config.clients[0].clientId;
+        let refreshToken = "cba321-2";
+        db.saveAuthorizationCode(code, {request: {clientId: clientId, scopes: ["weight"]}});
+        db.saveRefreshToken(refreshToken, clientId, ["weight"]);
+
+        const response = await Supertest(app)
+        .post("/token")
+        .type("form")
+        .send(
+            {
+                clientId: clientId,
+                clientSecret: config.clients[0].clientSecret,
+                grantType: config.refreshTokenGrant,
+                refreshToken: refreshToken,
+            });
+
+        expect(response.status).to.be.equal(200);
+
+        // tslint:disable-next-line:no-unused-expression
+        expect(db.validAccessToken(JSON.parse(response.text).accessToken)).to.be.true;
     });
 });

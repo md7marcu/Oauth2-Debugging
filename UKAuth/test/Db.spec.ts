@@ -3,12 +3,6 @@ import Db from "../lib/db/Db";
 import { Guid } from "guid-typescript";
 
 describe ("Static Db implementation", () => {
-    // let db: Db;
-
-    // beforeEach = () => {
-    //     console.log("hello hello hello");
-    //     this.db = new Db();
-    // };
 
     it ("Should return undefined if the client doesn't exist", () => {
         // tslint:disable-next-line:no-unused-expression
@@ -79,14 +73,15 @@ describe ("Static Db implementation", () => {
 
         // tslint:disable-next-line:no-unused-expression
         expect(db.validAccessToken(accessToken)).to.be.true;
-        assert.equal(db.getToken(accessToken).clientId, clientId);
+        assert.equal(db.getAccessToken(accessToken).clientId, clientId);
     });
 
     it ("Should save a refresh token", () => {
         let refreshToken = "token321";
         let clientId = "Client23";
+        let scopes = ["c", "b"];
         let db = new Db();
-        db.saveRefreshToken(refreshToken, clientId);
+        db.saveRefreshToken(refreshToken, clientId, scopes);
 
         // tslint:disable-next-line:no-unused-expression
         expect(db.validRefreshToken(refreshToken)).to.be.true;

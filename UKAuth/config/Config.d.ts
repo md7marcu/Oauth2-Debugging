@@ -25,6 +25,8 @@ declare module "node-config-ts" {
     createdTimeAgo: number
     addNonceToAccessToken: boolean
     saveAccessToken: boolean
+    authorizationCodeGrant: string
+    refreshTokenGrant: string
   }
   interface Client {
     clientId: string

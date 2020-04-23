@@ -4,7 +4,7 @@ import { findIndex, difference } from "lodash";
 import { Guid } from "guid-typescript";
 import * as buildUrl from "build-url";
 import * as Debug from "debug";
-const debug = Debug("ProtectedRoutes");
+const debug = Debug("AuthRoute");
 import * as Fs from "fs";
 import { sign, VerifyOptions } from "jsonwebtoken";
 import * as path from "path";
@@ -200,7 +200,7 @@ export class AuthRoutes {
             }
 
             // 2. authorizationCode request =>
-            if (req.body?.grantType === "authorizationCode") {
+            if (req.body?.grantType === config.authorizationCodeGrant) {
 
                 // fresh or replayed token
                 if (config.verifyCode && !db.validAuthorizationCode(req.body.authorizationCode)) {
@@ -218,26 +218,15 @@ export class AuthRoutes {
                         db.deleteAuthorizationCode(req.body.authorizationCode);
                     }
 
-                    if (authorizationCode.request.clientId === clientId) {
-                        let payload = {
-                            iss: config.issuer,
-                            aud: config.audience,
-                            sub: config.subject,
-                            exp: Math.floor(Date.now() / 1000) + config.expiryTime,
-                            iat: Math.floor(Date.now() / 1000) - config.createdTimeAgo,
-                            scope: authorizationCode.scopes,
-                        };
-
-                        if (config.addNonceToToken) {
-                            (payload as any).jti = this.getRandomString(16);
-                        }
-                        let accessToken = this.createAccessToken(payload);
+                    if (config.verifyClientId && authorizationCode.request.clientId === clientId) {
+                        let payload = this.buildAccessToken(authorizationCode.scopes);
+                        let accessToken = this.signAccessToken(payload);
 
                         if (config.saveAccessToken) {
                             db.saveAccessToken({accessToken: accessToken, clientId: clientId});
                         }
                         let refreshToken = this.getRandomString(config.refreshTokenLength);
-                        db.saveRefreshToken({refreshToken: refreshToken, clientId: clientId});
+                        db.saveRefreshToken(refreshToken, clientId, authorizationCode.scopes);
                         res.status(200).send({accessToken: accessToken, refreshToken: refreshToken });
 
                         return;
@@ -253,24 +242,29 @@ export class AuthRoutes {
 
                 return;
             }
-            // 3. refreshToken request =>
-            } else if (req.body.grantType === "refreshToken") {
+            } else if (req.body.grantType === config.refreshTokenGrant) {
 
-                // 4.1 Check if we have token
+                // Check if we have the refresh token, i.e. valid refresh token
                 let refreshToken = db.getRefreshToken(req?.body?.refreshToken ?? "");
 
                 if (refreshToken) {
                     debug("Verified refresh token.");
 
-                    if (refreshToken.clientId !== clientId) {
-                        debug("Client mismatch on refresh token.");
-                        res.status(400).send("Invalid refresh token.");
+                    // TODO: The way this is setup, we wouldn't really be able to do anything with this
+                    // Another valid clientId <= might be able to do it, VERIFY
+                    if (config.verifyClientId && refreshToken.clientId !== clientId) {
+                         debug("Client mismatch on refresh token.");
+                         res.status(400).send("Invalid refresh token.");
 
                         return;
                     }
-                    // TODO 4.2 Create refresh token
-                    // TODO 4.3 Save token
-                    // TODO 4.4 Create response
+                    let payload = this.buildAccessToken(refreshToken.scopes);
+                    let accessToken = this.signAccessToken(payload);
+
+                    if (config.saveAccessToken) {
+                        db.saveAccessToken(accessToken, clientId);
+                    }
+                    res.status(200).send({accessToken: accessToken, refreshToken: refreshToken });
                 } else {
                     debug("Called with invalid refresh token");
                     res.status(400).send("Invalid Code.");
@@ -298,7 +292,24 @@ export class AuthRoutes {
         return [...Array(tokenLength)].map(i => (~~(Math.random() * 36)).toString(36)).join("");
     }
 
-    createAccessToken(options: IVerifyOptions): string{
+    buildAccessToken(scopes) {
+        let payload = {
+            iss: config.issuer,
+            aud: config.audience,
+            sub: config.subject,
+            exp: Math.floor(Date.now() / 1000) + config.expiryTime,
+            iat: Math.floor(Date.now() / 1000) - config.createdTimeAgo,
+            scope: scopes,
+        };
+
+        if (config.addNonceToToken) {
+            (payload as any).jti = this.getRandomString(16);
+        }
+
+        return payload;
+    }
+
+    signAccessToken(options: IVerifyOptions): string {
         return sign(options, Fs.readFileSync(path.join(__dirname, "../../config/key.pem")), { algorithm: config.algorithm });
     }
 }

@@ -28,5 +28,7 @@
     "expiryTime": 3600,
     "createdTimeAgo": 30,
     "addNonceToAccessToken": true,
-    "saveAccessToken": true
+    "saveAccessToken": true,
+    "authorizationCodeGrant": "authorization_code",
+    "refreshTokenGrant": "refresh_token"
 }

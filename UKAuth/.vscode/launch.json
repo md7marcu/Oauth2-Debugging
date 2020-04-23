@@ -45,7 +45,7 @@
               "${workspaceFolder}/dist/**/*.js"
             ],
           },
-        {
+          {
             "type": "node",
             "request": "launch",
             "name": "Mocha All",

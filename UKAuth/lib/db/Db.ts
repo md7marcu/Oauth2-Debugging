@@ -68,12 +68,12 @@ export default class Db {
         return find(this.accessTokens, (t) => t.accessToken === accessToken) !== undefined;
     }
 
-    public getToken(accessToken: string) {
+    public getAccessToken(accessToken: string) {
         return find(this.accessTokens, (t) => t.accessToken === accessToken);
     }
 
-    public saveRefreshToken(refreshToken: string, clientId: string){
-        this.refreshTokens.push({"refreshToken": refreshToken, "clientId": clientId});
+    public saveRefreshToken(refreshToken: string, clientId: string, scopes: string[]){
+        this.refreshTokens.push({"refreshToken": refreshToken, "clientId": clientId, "scopes": scopes});
     }
 
     public validRefreshToken(refreshToken: string): boolean {
