@@ -34,20 +34,20 @@ describe("Express routes", () => {
     });
 
     // // Troubleshooting key's
-    it("Should verify the signature", () => {
-        let serverCert = Fs.readFileSync("./config/cert.pem").toString();
-        let publicKey = pki.publicKeyToPem(pki.certificateFromPem(serverCert).publicKey);
-        let privateKey = Fs.readFileSync("./config/key.pem").toString();
-        let token = sign({foo: "bar", aud: config.audience }, privateKey, { algorithm: "RS256"});
+    // it("Should verify the signature", () => {
+    //     let serverCert = Fs.readFileSync("./config/cert.pem").toString();
+    //     let publicKey = pki.publicKeyToPem(pki.certificateFromPem(serverCert).publicKey);
+    //     let privateKey = Fs.readFileSync("./config/key.pem").toString();
+    //     let token = sign({foo: "bar", aud: config.audience }, privateKey, { algorithm: "RS256"});
 
-        try {
-            let decodedToken = verify(token, publicKey,  { audience: config.audience, ignoreExpiration: true, ignoreNotBefore: true, algorithms: ["RS256"] });
-        } catch (err) {
-            console.log(err);
-        }
-        // tslint:disable-next-line:no-unused-expression
-        expect(true).to.be.true;
-    });
+    //     try {
+    //         let decodedToken = verify(token, publicKey,  { audience: config.audience, ignoreExpiration: true, ignoreNotBefore: true, algorithms: ["RS256"] });
+    //     } catch (err) {
+    //         console.log(err);
+    //     }
+    //     // tslint:disable-next-line:no-unused-expression
+    //     expect(true).to.be.true;
+    // });
 
     it("Should render error on authorize endpoint when called without client id", async () => {
         const response = await Supertest(app).get("/authorize");
@@ -146,9 +146,6 @@ describe("Express routes", () => {
     });
 
     it("Should return 401 if supplied code is not valid", async () => {
-        // let code = "abc123";
-        // db.saveCode(code, {stupid: "object"});
-
         const response = await Supertest(app)
         .post("/token")
         .type("form")
@@ -167,7 +164,7 @@ describe("Express routes", () => {
     it("Should return 200 and token", async () => {
         let code = "abc123";
         let clientId = config.clients[0].clientId;
-        db.saveCode(code, {request: {clientId: clientId, scopes: ["weight"]}});
+        db.saveAuthorizationCode(code, {request: {clientId: clientId, scopes: ["weight"]}});
 
         const response = await Supertest(app)
         .post("/token")

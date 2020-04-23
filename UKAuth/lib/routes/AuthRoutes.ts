@@ -18,11 +18,6 @@ interface IVerifyOptions extends VerifyOptions {
 }
 export class AuthRoutes {
 
-    // Refactor extract to db
-    // Mock db
-    private refreshTokens = {};
-    private accessTokens = [];
-
     public routes(app): void {
         let db = app.Db;
 
@@ -31,8 +26,8 @@ export class AuthRoutes {
             {
                 title: "Authorization Server",
                 endpoints: {
-                    authorization: config.authorizationEndpoint,
-                    token: config.tokenEndpoint,
+                    authorizationCode: config.authorizationEndpoint,
+                    accessToken: config.accessTokenEndpoint,
                     alive: config.aliveEndpoint,
                 },
             });
@@ -127,7 +122,7 @@ export class AuthRoutes {
             // If the user allowed the request
             if (req.body.allowed) {
 
-                // Code request
+                // Authorization code request
                 if (query.responseType === "code") {
                     // Verify scopes - should be the same as the clients scope
                     let selectedScopes = [""]; // Get scopes from req.body "#{scope}"
@@ -141,9 +136,9 @@ export class AuthRoutes {
                         return;
                     }
 
-                    // Create the code and save it with the request
-                    let codeId = this.getRandomString(config.accessCodeLength);
-                    db.saveCode(codeId, { request: query, scopes: selectedScopes});
+                    // Create the authorization code and save it with the request
+                    let codeId = this.getRandomString(config.authorizationCodeLength);
+                    db.saveAuthorizationCode(codeId, { request: query, scopes: selectedScopes});
 
                     let queryParams: any;
 
@@ -208,52 +203,52 @@ export class AuthRoutes {
             if (req.body?.grantType === "authorizationCode") {
 
                 // fresh or replayed token
-                if (config.verifyCode && !db.validCode(req.body.code)) {
-                    debug(`Code is invalid: ${req.body.code}`);
+                if (config.verifyCode && !db.validAuthorizationCode(req.body.authorizationCode)) {
+                    debug(`Authorization Code is invalid: ${req.body.authorizationCode}`);
                     res.status(401).send("Invalid code.");
 
                     return;
                 }
 
-                let code = db.getCode(req.body.code);
+                let authorizationCode = db.getAuthorizationCode(req.body.authorizationCode);
 
-                if (code) {
+                if (authorizationCode) {
                     // remove code so it cannot be reused
                     if (config.clearAuthorizationCode) {
-                        db.deleteCode(req.body.code);
+                        db.deleteAuthorizationCode(req.body.authorizationCode);
                     }
 
-                    if (code.request.clientId === clientId) {
+                    if (authorizationCode.request.clientId === clientId) {
                         let payload = {
                             iss: config.issuer,
                             aud: config.audience,
                             sub: config.subject,
                             exp: Math.floor(Date.now() / 1000) + config.expiryTime,
                             iat: Math.floor(Date.now() / 1000) - config.createdTimeAgo,
-                            scope: code.scopes,
+                            scope: authorizationCode.scopes,
                         };
 
                         if (config.addNonceToToken) {
                             (payload as any).jti = this.getRandomString(16);
                         }
-                        let token = this.createToken(payload);
+                        let accessToken = this.createAccessToken(payload);
 
-                        if (config.saveToken) {
-                            db.saveToken({token: token, clientId: clientId});
+                        if (config.saveAccessToken) {
+                            db.saveAccessToken({accessToken: accessToken, clientId: clientId});
                         }
                         let refreshToken = this.getRandomString(config.refreshTokenLength);
                         db.saveRefreshToken({refreshToken: refreshToken, clientId: clientId});
-                        res.status(200).send({token: token, refreshToken: refreshToken });
+                        res.status(200).send({accessToken: accessToken, refreshToken: refreshToken });
 
                         return;
                     } else {
-                        debug(`Client id does not match stored client id: ${code.request.clientId}/${clientId}`);
+                        debug(`Client id does not match stored client id: ${authorizationCode.request.clientId}/${clientId}`);
                         res.status(400).send("Invalid grant.");
 
                         return;
                     }
                 } else {
-                    debug(`Could not find code in storage ${code}`)
+                    debug(`Could not find code in storage ${authorizationCode}`)
                     res.status(400).send("Invalid grant.");
 
                 return;
@@ -303,7 +298,7 @@ export class AuthRoutes {
         return [...Array(tokenLength)].map(i => (~~(Math.random() * 36)).toString(36)).join("");
     }
 
-    createToken(options: IVerifyOptions): string{
+    createAccessToken(options: IVerifyOptions): string{
         return sign(options, Fs.readFileSync(path.join(__dirname, "../../config/key.pem")), { algorithm: config.algorithm });
-    };
+    }
 }

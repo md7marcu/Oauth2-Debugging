@@ -7,7 +7,7 @@ declare module "node-config-ts" {
     subject: string
     algorithm: string
     authorizationEndpoint: string
-    tokenEndpoint: string
+    accessTokenEndpoint: string
     aliveEndpoint: string
     scopes: string
     verifyRedirectUrl: boolean
@@ -17,14 +17,14 @@ declare module "node-config-ts" {
     validateScope: boolean
     clearAuthorizationCode: boolean
     clearRequestId: boolean
-    accessCodeLength: number
-    tokenLength: number
+    authorizationCodeLength: number
+    accessTokenLength: number
     refreshTokenLength: number
     clients: Client[]
     expiryTime: number
     createdTimeAgo: number
-    addNonceToToken: boolean
-    saveToken: boolean
+    addNonceToAccessToken: boolean
+    saveAccessToken: boolean
   }
   interface Client {
     clientId: string

@@ -4,7 +4,7 @@
     "subject": "ultrakompis",
     "algorithm": "RS256",
     "authorizationEndpoint": "https://localhost:3001/authorize",
-    "tokenEndpoint": "https://localhost:3001/token",
+    "accessTokenEndpoint": "https://localhost:3001/token",
     "aliveEndpoint": "https://localhost:3001/alive",
     "scopes": "weight",
     "verifyRedirectUrl": true,
@@ -14,8 +14,8 @@
     "validateScope": true,
     "clearAuthorizationCode": true,
     "clearRequestId": true,
-    "accessCodeLength": 16,
-    "tokenLength": 16,
+    "authorizationCodeLength": 16,
+    "accessTokenLength": 16,
     "refreshTokenLength": 64,
     "clients": [
         {
@@ -27,6 +27,6 @@
     ],
     "expiryTime": 3600,
     "createdTimeAgo": 30,
-    "addNonceToToken": true,
-    "saveToken": true
+    "addNonceToAccessToken": true,
+    "saveAccessToken": true
 }

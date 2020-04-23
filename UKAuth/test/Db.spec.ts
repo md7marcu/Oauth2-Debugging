@@ -32,27 +32,27 @@ describe ("Static Db implementation", () => {
         let codeId = "code123";
         let codeData = {object: "obj"};
         let db = new Db();
-        db.saveCode(codeId, codeData);
+        db.saveAuthorizationCode(codeId, codeData);
 
         // tslint:disable-next-line:no-unused-expression
-        expect(db.validCode(codeId)).to.be.true;
-        assert.equal(db.getCode(codeId).object, "obj");
+        expect(db.validAuthorizationCode(codeId)).to.be.true;
+        assert.equal(db.getAuthorizationCode(codeId).object, "obj");
     });
 
-    it ("Should return invalid code if it doesn't exist", () => {
+    it ("Should return invalid authorization code if it doesn't exist", () => {
         let db = new Db();
-        let code = db.validCode("Elefant");
+        let code = db.validAuthorizationCode("Elefant");
 
         // tslint:disable-next-line:no-unused-expression
         expect(code).to.be.false;
     });
 
-    it ("Should delete a code", () => {
+    it ("Should delete an authorization code", () => {
         let db = new Db();
         let code = "code 321";
-        db.saveCode(code, {});
+        db.saveAuthorizationCode(code, {});
 
-        let valid = db.validCode("code");
+        let valid = db.validAuthorizationCode("code");
 
         // tslint:disable-next-line:no-unused-expression
         expect(valid).to.be.false;
@@ -61,7 +61,6 @@ describe ("Static Db implementation", () => {
     it("Should delete a request", () => {
         let db = new Db();
         let guid = Guid.create();
-        let stringGuid = guid.toString();
 
         db.saveRequest(guid, "{query: anyQuery}");
         db.deleteRequest(guid);
@@ -72,15 +71,15 @@ describe ("Static Db implementation", () => {
         expect(request).to.be.empty.string;
     });
 
-    it ("Should save a token", () => {
-        let token = "token321";
+    it ("Should save an access token", () => {
+        let accessToken = "token321";
         let clientId = "Client23";
         let db = new Db();
-        db.saveToken(token, clientId);
+        db.saveAccessToken(accessToken, clientId);
 
         // tslint:disable-next-line:no-unused-expression
-        expect(db.validToken(token)).to.be.true;
-        assert.equal(db.getToken(token).clientId, clientId);
+        expect(db.validAccessToken(accessToken)).to.be.true;
+        assert.equal(db.getToken(accessToken).clientId, clientId);
     });
 
     it ("Should save a refresh token", () => {

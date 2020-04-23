@@ -12,8 +12,8 @@ interface IClientModel {
 export default class Db {
     private clients = config.clients;
     private requests = [];
-    private codes = [];
-    private tokens = [];
+    private authorizationCodes = [];
+    private accessTokens = [];
     private refreshTokens = [];
 
     // Return client information for given ClientId if available, else undefined
@@ -40,36 +40,36 @@ export default class Db {
         });
     }
 
-    public getCode(codeId: string) {
-        return find(this.codes, (c) => c.codeId === codeId)?.object ?? {};
+    public getAuthorizationCode(codeId: string) {
+        return find(this.authorizationCodes, (c) => c.codeId === codeId)?.object ?? {};
     }
 
-    public saveCode(code: string, object: any) {
-        this.codes.push({"codeId": code, "object": object});
+    public saveAuthorizationCode(code: string, object: any) {
+        this.authorizationCodes.push({"codeId": code, "object": object});
     }
 
-    public deleteCode(codeId: string) {
-        remove(this.codes, (code) => {
+    public deleteAuthorizationCode(codeId: string) {
+        remove(this.authorizationCodes, (code) => {
             return code.codeId === codeId;
         });
     }
 
-    public validCode(codeId: string): boolean {
+    public validAuthorizationCode(codeId: string): boolean {
         // tslint:disable-next-line:whitespace
-        return find(this.codes, (c) => c.codeId === codeId) !== undefined;
+        return find(this.authorizationCodes, (c) => c.codeId === codeId) !== undefined;
     }
 
-    public saveToken(token: string, clientId: string) {
-        this.tokens.push({"token": token, "clientId": clientId});
+    public saveAccessToken(accessToken: string, clientId: string) {
+        this.accessTokens.push({"accessToken": accessToken, "clientId": clientId});
     }
 
-    public validToken(token: string): boolean {
+    public validAccessToken(accessToken: string): boolean {
         // tslint:disable-next-line:whitespace
-        return find(this.tokens, (t) => t.token === token) !== undefined;
+        return find(this.accessTokens, (t) => t.accessToken === accessToken) !== undefined;
     }
 
-    public getToken(token: string) {
-        return find(this.tokens, (t) => t.token === token);
+    public getToken(accessToken: string) {
+        return find(this.accessTokens, (t) => t.accessToken === accessToken);
     }
 
     public saveRefreshToken(refreshToken: string, clientId: string){
