@@ -26,9 +26,9 @@ export class AuthRoutes {
             {
                 title: "Authorization Server",
                 endpoints: {
-                    authorizationCode: config.authorizationEndpoint,
-                    accessToken: config.accessTokenEndpoint,
-                    alive: config.aliveEndpoint,
+                    authorizationEndpoint: config.authorizationEndpoint,
+                    accessTokenEndpoint: config.accessTokenEndpoint,
+                    aliveEndpoint: config.aliveEndpoint,
                 },
             });
         });

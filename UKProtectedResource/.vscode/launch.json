@@ -18,15 +18,16 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "program": "${workspaceFolder}\\dev)",
+            "name": "Debug TypeScript in Node.js",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/lib/server.ts",
+            "cwd": "${workspaceFolder}",
+            "protocol": "inspector",
+            "env": { "PORT":"3001" },
             "outFiles": [
-                "${workspaceFolder}/**/*.js"
-            ]
-        },
+              "${workspaceFolder}/dist/**/*.js"
+            ],
+          },
         {
             "type": "node",
             "request": "launch",

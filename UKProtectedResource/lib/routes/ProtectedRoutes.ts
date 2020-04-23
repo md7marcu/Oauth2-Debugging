@@ -5,6 +5,7 @@ import { VerifyOptions, verify } from "jsonwebtoken";
 import { pki }from "node-forge";
 import * as Debug from "debug";
 import { includes } from "lodash";
+import * as path from "path";
 
 const debug = Debug("ProtectedRoutes");
 
@@ -39,7 +40,7 @@ export class ResourceRoutes {
 
     private retrieveAccessToken = (req: IRequest, res: Response, next: NextFunction) => {
         // get the auth servers public key
-        let serverCert = Fs.readFileSync(config.serverCert).toString();
+        let serverCert = Fs.readFileSync(path.join(process.cwd(), config.serverCert)).toString();
         let publicKey = pki.publicKeyToPem(pki.certificateFromPem(serverCert).publicKey);
         let accessToken = this.getAccessToken(req);
 

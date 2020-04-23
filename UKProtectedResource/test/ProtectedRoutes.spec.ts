@@ -57,6 +57,7 @@ describe("Express routes", () => {
         expect(true).to.be.true;
     });
 
+    // This will only work running locally - considering the path is outside the docker image when building
     const createToken = (options: IVerifyOptions): string => {
         return sign(options, Fs.readFileSync(config.serverKey).toString(), { algorithm: config.algorithm });
     };
