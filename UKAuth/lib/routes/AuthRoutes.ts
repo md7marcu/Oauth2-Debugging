@@ -10,7 +10,7 @@ import { sign, VerifyOptions } from "jsonwebtoken";
 import * as path from "path";
 
 interface IRequest extends Request {
-    client_id: string;
+    clientId: string;
 }
 interface IVerifyOptions extends VerifyOptions {
     iss: string;
@@ -42,7 +42,7 @@ export class AuthRoutes {
             res.render("allowRequest",
             {
                 title: "Authorization Server",
-                client: db.getClient(config.clients[0].client_id),
+                client: db.getClient(config.clients[0].clientId),
                 requestId: "43",
             });
         });
@@ -53,7 +53,7 @@ export class AuthRoutes {
 
         app.get("/authorize", async(req: Request, res: Response) => {
              // 1. Verify ClientId
-            let client = db.getClient(((req?.query?.client_id ?? "") as string));
+            let client = db.getClient(((req?.query?.clientId ?? "") as string));
 
             if (config.verifyClientId && !client) {
                 res.render("authError",
@@ -66,8 +66,8 @@ export class AuthRoutes {
             }
 
             // 2. Verify Redirect URL
-            let redirectUrl = (req?.query?.redirect_uri ?? "").toString();
-            let invalidRedirectUri = findIndex(client?.redirect_uris ?? "", (r) => { return r === redirectUrl;}) < 0;
+            let redirectUrl = (req?.query?.redirectUri ?? "").toString();
+            let invalidRedirectUri = findIndex(client?.redirectUris ?? "", (r) => { return r === redirectUrl;}) < 0;
 
             if (config.verifyRedirectUrl && invalidRedirectUri) {
                 res.render("authError",
@@ -128,14 +128,14 @@ export class AuthRoutes {
             if (req.body.allowed) {
 
                 // Code request
-                if (query.response_type === "code") {
+                if (query.responseType === "code") {
                     // Verify scopes - should be the same as the clients scope
                     let selectedScopes = [""]; // Get scopes from req.body "#{scope}"
-                    let client = db.getClient(query.client_id);
+                    let client = db.getClient(query.clientId);
                     let validScopes = this.verifyScope(selectedScopes, client.scopes);
 
                     if (!validScopes) {
-                        let url = buildUrl(query.redirect_uri, { queryParams: { error: "Invalid Scope"}});
+                        let url = buildUrl(query.redirectUri, { queryParams: { error: "Invalid Scope"}});
                         res.redirect(url);
 
                         return;
@@ -158,16 +158,16 @@ export class AuthRoutes {
                         queryParams = {queryParams: { code: codeId }};
                     }
                     // Send the results back to the client
-                    res.redirect(buildUrl(query.redirect_uri, queryParams));
+                    res.redirect(buildUrl(query.redirectUri, queryParams));
 
                     return;
                 } else {
-                    res.redirect(buildUrl(query.redirect_uri, { queryParams: { error: "Invalid response type"}}));
+                    res.redirect(buildUrl(query.redirectUri, { queryParams: { error: "Invalid response type"}}));
 
                     return;
                     }
             } else {
-                let url = buildUrl(query.redirect_uri, { queryParams: { error: "Access Denied."}});
+                let url = buildUrl(query.redirectUri, { queryParams: { error: "Access Denied."}});
                 res.redirect(url);
 
                 return;
@@ -178,12 +178,12 @@ export class AuthRoutes {
             let clientId: string;
             let clientSecret: string;
 
-            if (req.body.client_id && req.body.client_secret) {
-                clientId = req.body.client_id;
-                clientSecret = req.body.client_secret;
+            if (req.body.clientId && req.body.clientSecret) {
+                clientId = req.body.clientId;
+                clientSecret = req.body.clientSecret;
             } else {
-                // TODO: Check header for client_id and secret? Check standard if that is in fact valid
-                debug(`Client id or secret are invalid ${req.body.client_id}/${req.body.client_secret}`);
+                // TODO: Check header for clientId and secret? Check standard if that is in fact valid
+                debug(`Client id or secret are invalid ${req.body.clientId}/${req.body.clientSecret}`);
                 res.status(401).send("Client Id and/or Client Secret.");
 
                 return;
@@ -197,15 +197,15 @@ export class AuthRoutes {
 
                 return;
             }
-            if (client.client_secret !== clientSecret) {
+            if (client.clientSecret !== clientSecret) {
                 debug(`Invalid client secret: ${clientSecret}`);
                 res.status(401).send("Invalid client secret.");
 
                 return;
             }
 
-            // 2. authorization_code request =>
-            if (req.body?.grant_type === "authorization_code") {
+            // 2. authorizationCode request =>
+            if (req.body?.grantType === "authorizationCode") {
 
                 // fresh or replayed token
                 if (config.verifyCode && !db.validCode(req.body.code)) {
@@ -223,7 +223,7 @@ export class AuthRoutes {
                         db.deleteCode(req.body.code);
                     }
 
-                    if (code.request.client_id === clientId) {
+                    if (code.request.clientId === clientId) {
                         let payload = {
                             iss: config.issuer,
                             aud: config.audience,
@@ -239,15 +239,15 @@ export class AuthRoutes {
                         let token = this.createToken(payload);
 
                         if (config.saveToken) {
-                            db.saveToken({token: token, client_id: clientId});
+                            db.saveToken({token: token, clientId: clientId});
                         }
                         let refreshToken = this.getRandomString(config.refreshTokenLength);
-                        db.saveRefreshToken({refreshToken: refreshToken, client_id: clientId});
-                        res.status(200).send({token: token, refresh_token: refreshToken });
+                        db.saveRefreshToken({refreshToken: refreshToken, clientId: clientId});
+                        res.status(200).send({token: token, refreshToken: refreshToken });
 
                         return;
                     } else {
-                        debug(`Client id does not match stored client id: ${code.request.client_id}/${clientId}`);
+                        debug(`Client id does not match stored client id: ${code.request.clientId}/${clientId}`);
                         res.status(400).send("Invalid grant.");
 
                         return;
@@ -258,16 +258,16 @@ export class AuthRoutes {
 
                 return;
             }
-            // 3. refresh_token request =>
-            } else if (req.body.grant_type === "refresh_token") {
+            // 3. refreshToken request =>
+            } else if (req.body.grantType === "refreshToken") {
 
                 // 4.1 Check if we have token
-                let refreshToken = db.getRefreshToken(req?.body?.refresh_token ?? "");
+                let refreshToken = db.getRefreshToken(req?.body?.refreshToken ?? "");
 
                 if (refreshToken) {
                     debug("Verified refresh token.");
 
-                    if (refreshToken.client_id !== clientId) {
+                    if (refreshToken.clientId !== clientId) {
                         debug("Client mismatch on refresh token.");
                         res.status(400).send("Invalid refresh token.");
 

@@ -8,10 +8,10 @@ block content
             p
             h2.sub-heading Allow Authentication Request From:
             p
-            if client.client_id
-                h4 Client Id: #{client.client_id}
-            if client.redirect_uris
-                h4 Redirect URI: #{client.redirect_uris}
+            if client.clientId
+                h4 Client Id: #{client.clientId}
+            if client.redirectUris
+                h4 Redirect URI: #{client.redirectUris}
             p
             form(method="POST" action="allowRequest")
                 input(type="hidden" name="requestId" value="#{requestId}")

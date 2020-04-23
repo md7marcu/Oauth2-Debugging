@@ -57,7 +57,7 @@ describe("Express routes", () => {
     });
 
     it("Should render error on authorize endpoint when called without redirect url", async () => {
-        const response = await Supertest(app).get("/authorize").query({ client_id: config.clients[0].client_id });
+        const response = await Supertest(app).get("/authorize").query({ clientId: config.clients[0].clientId });
 
         expect(response.status).to.be.equal(200);
         expect(response.text).to.contain("Invalid Redirect URL.");
@@ -66,8 +66,8 @@ describe("Express routes", () => {
     it("Should redirect to callback when authorize endpoint called with invalid scope", async () => {
         const response = await Supertest(app).get("/authorize").query(
             {
-                client_id: config.clients[0].client_id,
-                redirect_uri: config.clients[0].redirect_uris[0],
+                clientId: config.clients[0].clientId,
+                redirectUri: config.clients[0].redirectUris[0],
                 scopes: ["non existing"],
             });
 
@@ -78,8 +78,8 @@ describe("Express routes", () => {
     it("Should render allowRequest page when call is successful", async () => {
         const response = await Supertest(app).get("/authorize").query(
             {
-                client_id: config.clients[0].client_id,
-                redirect_uri: config.clients[0].redirect_uris[0],
+                clientId: config.clients[0].clientId,
+                redirectUri: config.clients[0].redirectUris[0],
                 scopes: ["weight"],
             });
 
@@ -96,7 +96,7 @@ describe("Express routes", () => {
 
     it("Should redirect to callback with error if allowed not passed in", async () => {
         let requestId = Guid.create();
-        db.saveRequest(requestId, {redirect_uri: "https://localhost:3002/"});
+        db.saveRequest(requestId, {redirectUri: "https://localhost:3002/"});
 
         const response = await Supertest(app)
         .post("/allowRequest")
@@ -123,8 +123,8 @@ describe("Express routes", () => {
         .type("form")
         .send(
             {
-                client_id: config.clients[0].client_id,
-                client_secret: "invalid secret",
+                clientId: config.clients[0].clientId,
+                clientSecret: "invalid secret",
             });
 
         expect(response.status).to.be.equal(401);
@@ -137,8 +137,8 @@ describe("Express routes", () => {
         .type("form")
         .send(
             {
-                client_id: config.clients[0].client_id,
-                client_secret: config.clients[0].client_secret,
+                clientId: config.clients[0].clientId,
+                clientSecret: config.clients[0].clientSecret,
             });
 
         expect(response.status).to.be.equal(400);
@@ -154,9 +154,9 @@ describe("Express routes", () => {
         .type("form")
         .send(
             {
-                client_id: config.clients[0].client_id,
-                client_secret: config.clients[0].client_secret,
-                grant_type: "authorization_code",
+                clientId: config.clients[0].clientId,
+                clientSecret: config.clients[0].clientSecret,
+                grantType: "authorizationCode",
                 code: "invalidCode",
             });
 
@@ -166,21 +166,21 @@ describe("Express routes", () => {
 
     it("Should return 200 and token", async () => {
         let code = "abc123";
-        let clientId = config.clients[0].client_id;
-        db.saveCode(code, {request: {client_id: clientId, scopes: ["weight"]}});
+        let clientId = config.clients[0].clientId;
+        db.saveCode(code, {request: {clientId: clientId, scopes: ["weight"]}});
 
         const response = await Supertest(app)
         .post("/token")
         .type("form")
         .send(
             {
-                client_id: clientId,
-                client_secret: config.clients[0].client_secret,
-                grant_type: "authorization_code",
+                clientId: clientId,
+                clientSecret: config.clients[0].clientSecret,
+                grantType: "authorizationCode",
                 code: code,
             });
 
         expect(response.status).to.be.equal(200);
-        expect(response.text).to.contain("refresh_token");
+        expect(response.text).to.contain("refreshToken");
     });
 });

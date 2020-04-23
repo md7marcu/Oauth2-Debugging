@@ -3,9 +3,9 @@ import { Guid } from "guid-typescript";
 import { config } from "node-config-ts";
 
 interface IClientModel {
-    client_id: string;
-    client_secret: string;
-    redirect_uris: [string];
+    clientId: string;
+    clientSecret: string;
+    redirectUris: [string];
     scopes: [string];
 }
 
@@ -18,7 +18,7 @@ export default class Db {
 
     // Return client information for given ClientId if available, else undefined
     public getClient(clientId: string): IClientModel {
-        return find(this.clients, (c) => { return c.client_id === clientId; });
+        return find(this.clients, (c) => { return c.clientId === clientId; });
     }
 
     public saveRequest(requestId: Guid, query: any) {

@@ -27,9 +27,9 @@ declare module "node-config-ts" {
     saveToken: boolean
   }
   interface Client {
-    client_id: string
-    client_secret: string
-    redirect_uris: string[]
+    clientId: string
+    clientSecret: string
+    redirectUris: string[]
     scopes: string[]
   }
   export const config: Config

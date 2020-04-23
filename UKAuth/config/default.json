@@ -19,9 +19,9 @@
     "refreshTokenLength": 64,
     "clients": [
         {
-            "client_id": "ukauth-client",
-            "client_secret": "secretsecretsecret",
-            "redirect_uris": ["http://localhost:3001/callback"],
+            "clientId": "ukauth-client",
+            "clientSecret": "secretsecretsecret",
+            "redirectUris": ["http://localhost:3001/callback"],
             "scopes": ["weight", "something", "else"]
         }
     ],
