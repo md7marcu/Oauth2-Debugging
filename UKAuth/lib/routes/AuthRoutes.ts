@@ -1,12 +1,20 @@
 import { Request, Response } from "express";
 import { config } from "node-config-ts";
-import Db from "../db/Db";
 import { findIndex, difference } from "lodash";
 import { Guid } from "guid-typescript";
 import * as buildUrl from "build-url";
+import * as Debug from "debug";
+const debug = Debug("ProtectedRoutes");
+import * as Fs from "fs";
+import { sign, VerifyOptions } from "jsonwebtoken";
+import * as path from "path";
 
 interface IRequest extends Request {
     client_id: string;
+}
+interface IVerifyOptions extends VerifyOptions {
+    iss: string;
+    aud: string;
 }
 export class AuthRoutes {
 
@@ -134,7 +142,7 @@ export class AuthRoutes {
                     }
 
                     // Create the code and save it with the request
-                    let codeId = this.getRandomString(config.tokenLength);
+                    let codeId = this.getRandomString(config.accessCodeLength);
                     db.saveCode(codeId, { request: query, scopes: selectedScopes});
 
                     let queryParams: any;
@@ -167,56 +175,118 @@ export class AuthRoutes {
         });
 
         app.post("/token", async(req: Request, res: Response) => {
-            // tslint:disable-next-line:no-string-literal
-            let jwt = req.headers["authorization"];
             let clientId: string;
             let clientSecret: string;
 
-            // 1. if valid authorization header grab client id and secrets - or grab it from body
-            if (jwt) {
-                let clientHeader = jwt.slice("basic ".length).split(":");
-                clientId = decodeURI(clientHeader[0]);
-                clientSecret = decodeURI(clientHeader[1]);
+            if (req.body.client_id && req.body.client_secret) {
+                clientId = req.body.client_id;
+                clientSecret = req.body.client_secret;
             } else {
-                res.status(400).send("Missing header"); // should be allowed to supply clientid/secret in body as well
+                // TODO: Check header for client_id and secret? Check standard if that is in fact valid
+                debug(`Client id or secret are invalid ${req.body.client_id}/${req.body.client_secret}`);
+                res.status(401).send("Client Id and/or Client Secret.");
 
                 return;
             }
 
             let client = db.getClient(clientId);
 
-            if (!client && client.client_secret !== clientSecret) {
+            if (!client) {
+                debug(`Could not find client: ${clientId}`);
                 res.status(401).send("Invalid client.");
+
+                return;
+            }
+            if (client.client_secret !== clientSecret) {
+                debug(`Invalid client secret: ${clientSecret}`);
+                res.status(401).send("Invalid client secret.");
 
                 return;
             }
 
             // 2. authorization_code request =>
-            if (req.body.grant_type === "authorization_code") {
+            if (req.body?.grant_type === "authorization_code") {
 
                 // fresh or replayed token
                 if (config.verifyCode && !db.validCode(req.body.code)) {
-                    res.status(400).send("Invalid code.");
+                    debug(`Code is invalid: ${req.body.code}`);
+                    res.status(401).send("Invalid code.");
 
                     return;
                 }
 
-                // remove code so it cannot be reused
-                if (config.clearAuthorizationCode) {
-                    db.deleteCode(req.body.code);
-                }
+                let code = db.getCode(req.body.code);
 
-                //code should contain request including clientid etc
-                // 3.1 Create token
-                // 3.2 Save token
-                // 3.3 Create refresh token
-                // 3.4 Create response
+                if (code) {
+                    // remove code so it cannot be reused
+                    if (config.clearAuthorizationCode) {
+                        db.deleteCode(req.body.code);
+                    }
+
+                    if (code.request.client_id === clientId) {
+                        let payload = {
+                            iss: config.issuer,
+                            aud: config.audience,
+                            sub: config.subject,
+                            exp: Math.floor(Date.now() / 1000) + config.expiryTime,
+                            iat: Math.floor(Date.now() / 1000) - config.createdTimeAgo,
+                            scope: code.scopes,
+                        };
+
+                        if (config.addNonceToToken) {
+                            (payload as any).jti = this.getRandomString(16);
+                        }
+                        let token = this.createToken(payload);
+
+                        if (config.saveToken) {
+                            db.saveToken({token: token, client_id: clientId});
+                        }
+                        let refreshToken = this.getRandomString(config.refreshTokenLength);
+                        db.saveRefreshToken({refreshToken: refreshToken, client_id: clientId});
+                        res.status(200).send({token: token, refresh_token: refreshToken });
+
+                        return;
+                    } else {
+                        debug(`Client id does not match stored client id: ${code.request.client_id}/${clientId}`);
+                        res.status(400).send("Invalid grant.");
+
+                        return;
+                    }
+                } else {
+                    debug(`Could not find code in storage ${code}`)
+                    res.status(400).send("Invalid grant.");
+
+                return;
+            }
             // 3. refresh_token request =>
             } else if (req.body.grant_type === "refresh_token") {
-                // 4.1 Check if token is already there (and delete ?)
-                // 4.2 Create refresh token
-                // 4.3 Save token
-                // 4.4 Create response
+
+                // 4.1 Check if we have token
+                let refreshToken = db.getRefreshToken(req?.body?.refresh_token ?? "");
+
+                if (refreshToken) {
+                    debug("Verified refresh token.");
+
+                    if (refreshToken.client_id !== clientId) {
+                        debug("Client mismatch on refresh token.");
+                        res.status(400).send("Invalid refresh token.");
+
+                        return;
+                    }
+                    // TODO 4.2 Create refresh token
+                    // TODO 4.3 Save token
+                    // TODO 4.4 Create response
+                } else {
+                    debug("Called with invalid refresh token");
+                    res.status(400).send("Invalid Code.");
+
+                    return;
+                }
+            } else {
+                debug("Called with invalid grant.");
+                res.status(400).send("Invalid Grant.");
+
+                return;
             }
 
             res.status(200).send();
@@ -232,4 +302,8 @@ export class AuthRoutes {
         // tslint:disable-next-line:no-bitwise
         return [...Array(tokenLength)].map(i => (~~(Math.random() * 36)).toString(36)).join("");
     }
+
+    createToken(options: IVerifyOptions): string{
+        return sign(options, Fs.readFileSync(path.join(__dirname, "../../config/key.pem")), { algorithm: config.algorithm });
+    };
 }

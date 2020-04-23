@@ -71,4 +71,26 @@ describe ("Static Db implementation", () => {
         // tslint:disable-next-line:no-unused-expression
         expect(request).to.be.empty.string;
     });
+
+    it ("Should save a token", () => {
+        let token = "token321";
+        let clientId = "Client23";
+        let db = new Db();
+        db.saveToken(token, clientId);
+
+        // tslint:disable-next-line:no-unused-expression
+        expect(db.validToken(token)).to.be.true;
+        assert.equal(db.getToken(token).clientId, clientId);
+    });
+
+    it ("Should save a refresh token", () => {
+        let refreshToken = "token321";
+        let clientId = "Client23";
+        let db = new Db();
+        db.saveRefreshToken(refreshToken, clientId);
+
+        // tslint:disable-next-line:no-unused-expression
+        expect(db.validRefreshToken(refreshToken)).to.be.true;
+        assert.equal(db.getRefreshToken(refreshToken).clientId, clientId);
+    });
 });

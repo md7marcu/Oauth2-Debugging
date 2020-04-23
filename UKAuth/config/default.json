@@ -1,6 +1,7 @@
 {    
     "issuer": "authorize.ultrakompis.com",
     "audience": "api.ultrakompis.com",
+    "subject": "ultrakompis",
     "algorithm": "RS256",
     "authorizationEndpoint": "https://localhost:3001/authorize",
     "tokenEndpoint": "https://localhost:3001/token",
@@ -13,7 +14,9 @@
     "validateScope": true,
     "clearAuthorizationCode": true,
     "clearRequestId": true,
+    "accessCodeLength": 16,
     "tokenLength": 16,
+    "refreshTokenLength": 64,
     "clients": [
         {
             "client_id": "ukauth-client",
@@ -21,5 +24,9 @@
             "redirect_uris": ["http://localhost:3001/callback"],
             "scopes": ["weight", "something", "else"]
         }
-    ]
+    ],
+    "expiryTime": 3600,
+    "createdTimeAgo": 30,
+    "addNonceToToken": true,
+    "saveToken": true
 }

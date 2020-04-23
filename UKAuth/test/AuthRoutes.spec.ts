@@ -107,9 +107,80 @@ describe("Express routes", () => {
         expect(response.status).to.be.equal(302);
         expect(JSON.stringify(response.header)).to.contain("Access%20Denied.");
     });
-    // it("Should return 200 on token endpoint", async () => {
-    //     const response = await Supertest(app).get("/token");
 
-    //     expect(response.status).to.be.equal(400);
-    // });
+    it("Should return 401 if client id is missing", async () => {
+        const response = await Supertest(app)
+        .post("/token")
+        .type("form");
+
+        expect(response.status).to.be.equal(401);
+        expect(response.text).to.contain("Client Id and/or Client Secret.");
+    });
+
+    it("Should return 401 if client secret is invalid", async () => {
+        const response = await Supertest(app)
+        .post("/token")
+        .type("form")
+        .send(
+            {
+                client_id: config.clients[0].client_id,
+                client_secret: "invalid secret",
+            });
+
+        expect(response.status).to.be.equal(401);
+        expect(response.text).to.contain("Invalid client secret.");
+    });
+
+    it("Should return 400 if grant type is invalid", async () => {
+        const response = await Supertest(app)
+        .post("/token")
+        .type("form")
+        .send(
+            {
+                client_id: config.clients[0].client_id,
+                client_secret: config.clients[0].client_secret,
+            });
+
+        expect(response.status).to.be.equal(400);
+        expect(response.text).to.contain("Invalid Grant.");
+    });
+
+    it("Should return 401 if supplied code is not valid", async () => {
+        // let code = "abc123";
+        // db.saveCode(code, {stupid: "object"});
+
+        const response = await Supertest(app)
+        .post("/token")
+        .type("form")
+        .send(
+            {
+                client_id: config.clients[0].client_id,
+                client_secret: config.clients[0].client_secret,
+                grant_type: "authorization_code",
+                code: "invalidCode",
+            });
+
+        expect(response.status).to.be.equal(401);
+        expect(response.text).to.contain("Invalid code.");
+    });
+
+    it("Should return 200 and token", async () => {
+        let code = "abc123";
+        let clientId = config.clients[0].client_id;
+        db.saveCode(code, {request: {client_id: clientId, scopes: ["weight"]}});
+
+        const response = await Supertest(app)
+        .post("/token")
+        .type("form")
+        .send(
+            {
+                client_id: clientId,
+                client_secret: config.clients[0].client_secret,
+                grant_type: "authorization_code",
+                code: code,
+            });
+
+        expect(response.status).to.be.equal(200);
+        expect(response.text).to.contain("refresh_token");
+    });
 });

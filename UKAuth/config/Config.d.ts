@@ -4,6 +4,7 @@ declare module "node-config-ts" {
   interface IConfig {
     issuer: string
     audience: string
+    subject: string
     algorithm: string
     authorizationEndpoint: string
     tokenEndpoint: string
@@ -16,8 +17,14 @@ declare module "node-config-ts" {
     validateScope: boolean
     clearAuthorizationCode: boolean
     clearRequestId: boolean
+    accessCodeLength: number
     tokenLength: number
+    refreshTokenLength: number
     clients: Client[]
+    expiryTime: number
+    createdTimeAgo: number
+    addNonceToToken: boolean
+    saveToken: boolean
   }
   interface Client {
     client_id: string
