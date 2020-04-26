@@ -3,6 +3,7 @@ import * as express from "express";
 import * as bodyParser from "body-parser";
 import { ClientRoutes } from "./routes/ClientRoutes";
 import * as mongoose from "mongoose";
+import Db from "./db/db";
 
 class App {
 
@@ -12,6 +13,8 @@ class App {
 
     constructor() {
         this.app = express();
+        // Create the "database"
+        (this.app as any).Db = new Db();
         this.config();
 
         if ("development" === this.app.get("env")) {

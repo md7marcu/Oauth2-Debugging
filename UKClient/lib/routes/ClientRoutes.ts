@@ -5,11 +5,14 @@ import * as Debug from "debug";
 const debug = Debug("AuthClient");
 import * as request from "request-promise-native";
 import { find, remove } from "lodash";
+import Db from "../db/db";
 
 export class ClientRoutes {
     private secrets = [];
 
     public routes(app): void {
+        let db: Db = app.Db;
+
         app.get("/alive", async(req: Request, res: Response) => {
             debug("Alive endpoint called.");
 
@@ -35,6 +38,7 @@ export class ClientRoutes {
 
             if (config.verifyState) {
                 (queryParams as any).state = this.getRandomString(16);
+                db.pushState((queryParams as any).state);
             }
 
             let authorize = buildUrl(config.authorizationEndpoint, { queryParams: queryParams });
@@ -53,12 +57,17 @@ export class ClientRoutes {
             let code = req?.query?.code ?? undefined;
             let state = req?.query?.state ?? undefined;
 
-            // TODO: Verify state
             if (config.verifyState){
-                let y = true;
+                let savedState: string = db.popState();
+
+                if (state !== savedState) {
+                    // Someone is trying to replay a token or created their own
+                    res.render("clientError", { title: config.title, error: "Invalid state received."});
+
+                    return;
+                }
             }
 
-            let headers = {"Content-Type": "application/x-www-form-urlencode"};
             let data = {
                     grant_type: config.authorizationCodeGrant,
                     authorization_code: code,
@@ -67,9 +76,10 @@ export class ClientRoutes {
                     redirect_uri: config.clients[0].redirectUris[0],
                 };
 
+            let accessTokenEndpoint = this.getAccessTokenEndpoint();
             let options = {
                 method: "POST",
-                uri: config.accessTokenEndpoint,
+                uri: accessTokenEndpoint,
                 body: data,
                 json: true,
             };
@@ -104,12 +114,14 @@ export class ClientRoutes {
                 let accessToken = req.query.accessToken;
                 let secrets = find(this.secrets, (s) => s.accessToken === accessToken);
 
+                let protectedResource = this.getProtectedResource();
+
                 if (!secrets) {
                     res.render("clientError", {title: config.title, error: "Invalid access token supplied."});
                 } else {
                     let options = {
                         method: "GET",
-                        uri: config.protectedResource,
+                        uri: protectedResource,
                         json: true,
                         auth: {
                             "bearer": accessToken,
@@ -137,6 +149,14 @@ export class ClientRoutes {
                 res.render("clientError", {title: config.title, error: "No access token supplied."});
             }
         });
+    }
+    // If we're running from the parent docker compose we need to get the host name of the protected resource
+    getProtectedResource() {
+        return process.env.protectedResource ? process.env.protectedResource : config.protectedResource;
+    }
+    // If we're running from the parent docker compose we need to get the host name of the protected resource
+    getAccessTokenEndpoint() {
+        return process.env.accessTokenEndpoint ? process.env.accessTokenEndpoint : config.accessTokenEndpoint;
     }
 
     // TODO: Duplicated with UKAuth
