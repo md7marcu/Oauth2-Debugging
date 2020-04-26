@@ -19,7 +19,7 @@ body {
   }
 
   .token {
-    display: block;
+    word-wrap: break-word; 
   }
   /* css for errors*/
 

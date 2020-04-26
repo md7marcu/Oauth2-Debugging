@@ -1,13 +1,7 @@
 import { find, remove } from "lodash";
 import { Guid } from "guid-typescript";
 import { config } from "node-config-ts";
-
-interface IClientModel {
-    clientId: string;
-    clientSecret: string;
-    redirectUris: [string];
-    scopes: [string];
-}
+import IClient from "interfaces/IClient";
 
 export default class Db {
     private clients = config.clients;
@@ -17,7 +11,7 @@ export default class Db {
     private refreshTokens = [];
 
     // Return client information for given ClientId if available, else undefined
-    public getClient(clientId: string): IClientModel {
+    public getClient(clientId: string): IClient {
         return find(this.clients, (c) => { return c.clientId === clientId; });
     }
 

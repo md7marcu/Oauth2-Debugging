@@ -28,8 +28,8 @@ block content
                         if protectedResource                        
                             h6 #{protectedResource}
                 p
-                    a.btn.btn-primary.mr-5(href="/alive")  One Click
-                    a.btn.btn-secondary.mr-3(href="/authorize") Get Token
+                    // a.btn.btn-primary.mr-5(href="/alive")  One Click
+                    a.btn.btn-primary.mr-3(href="/authorize") Get Token
                     // TODO: Thou shalt not pass tokens/codes/secrets as a query parameters
                     // https://owasp.org/www-community/vulnerabilities/Information_exposure_through_query_strings_in_url
-                    a.btn.btn-secondary(href=`/getResource?accessToken=${accessToken}`) Get Protected Resource
+                    a.btn.btn-primary(href=`/getResource?accessToken=${accessToken}`) Get Protected Resource

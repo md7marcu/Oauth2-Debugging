@@ -1,0 +1,32 @@
+version: "3"
+
+services:
+    authorization-server:
+        build: ./UKAuth
+        volumes:
+          - ./UKAUth:/usr/src/app
+          - /usr/src/app/node_modules
+        ports:
+          - 3002:3002
+          - 9228:9229
+        working_dir: /usr/src/app
+    client:
+        build: ./UKClient
+        volumes:
+            - ./UKClient:/usr/src/app
+            - /usr/src/app/node_modules
+        ports:
+            - 3000:3000
+            - 9226:9229
+        working_dir: /usr/src/app
+        command: "npm run dev"
+    protected-resource:
+        build: ./UKProtectedResource
+        volumes:
+            - ./UKProtectedResource:/usr/src/app
+            - /usr/src/app/node_modules
+        ports:
+            - 3001:3001
+            - 9227:9229
+        working_dir: /usr/src/app
+        command: "npm run dev"

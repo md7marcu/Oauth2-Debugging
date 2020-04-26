@@ -8,6 +8,7 @@ const debug = Debug("AuthRoute");
 import * as Fs from "fs";
 import { sign, VerifyOptions } from "jsonwebtoken";
 import * as path from "path";
+import IClient from "interfaces/IClient";
 
 interface IRequest extends Request {
     clientId: string;
@@ -33,22 +34,13 @@ export class AuthRoutes {
             });
         });
 
-        app.get("/testPug", async(req: IRequest, res: Response) => {
-            res.render("allowRequest",
-            {
-                title: "Authorization Server",
-                client: db.getClient(config.clients[0].clientId),
-                requestId: "43",
-            });
-        });
-
         app.get("/alive", async(req: IRequest, res: Response) => {
             res.send("Success!");
         });
 
         app.get("/authorize", async(req: Request, res: Response) => {
              // 1. Verify ClientId
-            let client = db.getClient(((req?.query?.client_id ?? "") as string));
+            let client: IClient = db.getClient(((req?.query?.client_id ?? "") as string));
 
             if (config.verifyClientId && !client) {
                 res.render("authError",
@@ -128,7 +120,7 @@ export class AuthRoutes {
                     // Verify scopes - should be the same as the clients scope
                     // TODO: Verify that it works with several scopes
                     let selectedScopes = req.body.scopes;
-                    let client = db.getClient(query.client_id);
+                    let client: IClient = db.getClient(query.client_id);
                     let invalidScopes = this.verifyScope(selectedScopes, client.scopes);
 
                     if (config.validateScope && invalidScopes) {
@@ -187,7 +179,7 @@ export class AuthRoutes {
                 return;
             }
 
-            let client = db.getClient(clientId);
+            let client: IClient = db.getClient(clientId);
 
             if (!client) {
                 debug(`Could not find client: ${clientId}`);
