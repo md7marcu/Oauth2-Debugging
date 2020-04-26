@@ -6,21 +6,21 @@ block content
             h1.display-4 Client
                 ul.list-group.list-group-flush
                     li.list-group-item 
-                        h5 Athorization Code
+                        h5 Authorization Code
                         if authorizationCode 
-                            h6 #{authorizationCode}
+                            h6.token #{authorizationCode}
                         else 
                             h6.error-outline No Authorization Code
                     li.list-group-item 
                         h5 Access Token
                         if accessToken 
-                            h6 #{accessToken}
+                            h6.token #{accessToken}
                         else 
                             h6.error-outline No Access Token
                     li.list-group-item 
                         h5 Refresh Token
                         if refreshToken 
-                            h6 #{refreshToken}
+                            h6.token #{refreshToken}
                         else 
                             h6.error-outline No Refresh Token
                     li.list-group-item

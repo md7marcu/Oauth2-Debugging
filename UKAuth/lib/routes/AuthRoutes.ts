@@ -100,7 +100,7 @@ export class AuthRoutes {
             let query;
             let requestId;
 
-            if(Guid.isGuid(req?.body?.request_id ?? "")) {
+            if (Guid.isGuid(req?.body?.request_id ?? "")) {
                 requestId = Guid.parse(req?.body?.request_id ?? "");
                 query = db.getRequest(requestId);
             }
