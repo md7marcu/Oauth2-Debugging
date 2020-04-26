@@ -13,7 +13,7 @@
     "coverage": "nyc -r lcov -e .ts -x \"*.spec.ts\" mocha -r ts-node/register test/**/*.spec.ts",
     "config-postinstall": "node-config-ts",
     "postinstall": "tsc -p ./src",
-    "watch": "tsc -w -p ./lib",
+    "watch": "tsc -w -p .",
     "map-debug": "env-cmd -f ./config/.env nodemon --legacy-watch --watch ./dist --inspect=0.0.0.0:9229 --nolazy ./dist/server.js"
   },
   "author": "",
