@@ -4,9 +4,9 @@ services:
   client:
     build: .
     volumes:
-      - .:/usr/src/app
+      - ./dist:/usr/src/app/dist
       - /usr/src/app/node_modules
     ports:
       - 3000:3000
       - 9226:9229
-    command: npm run dev
+    command: npm run map-debug

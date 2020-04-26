@@ -4,9 +4,9 @@ services:
   authorization-server:
     build: .
     volumes:
-      - .:/usr/src/app
+      - ./dist:/usr/src/app/dist
       - /usr/src/app/node_modules
     ports:
       - 3002:3002
       - 9228:9229
-    command: npm run dev
+    command: npm run map-debug

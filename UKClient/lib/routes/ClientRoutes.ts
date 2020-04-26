@@ -59,8 +59,7 @@ export class ClientRoutes {
             }
 
             let headers = {"Content-Type": "application/x-www-form-urlencode"};
-            let data =
-                {
+            let data = {
                     grant_type: config.authorizationCodeGrant,
                     authorization_code: code,
                     client_id: config.clients[0].clientId,

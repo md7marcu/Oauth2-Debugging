@@ -34,6 +34,23 @@
         },
         {
             "type": "node",
+            "request": "attach",
+            "name": "Attach to Docker - dist map",
+            "preLaunchTask": "tsc-watch",
+            "protocol":"auto",
+            "port": 9228,
+            "restart": true,
+            "localRoot": "${workspaceFolder}/dist",
+            "remoteRoot": "/dist",
+            "outFiles": [
+              "${workspaceFolder}/dist/**/*.js"
+            ],
+            "skipFiles": [
+              "<node_internals>/**/*.js",
+            ]
+          },
+        {
+            "type": "node",
             "request": "launch",
             "name": "Debug TypeScript in Node.js",
             "preLaunchTask": "build",

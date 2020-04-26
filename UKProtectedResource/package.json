@@ -11,7 +11,10 @@
     "test": "mocha -r ts-node/register test/**/*.spec.ts",
     "test-dev": "nodemon --watch . --ext ts --exec \"mocha -r ts-node/register test/**/*.spec.ts\"",
     "coverage": "nyc -r lcov -e .ts -x \"*.spec.ts\" mocha -r ts-node/register test/**/*.spec.ts",
-    "postinstall": "node-config-ts"
+    "config-postinstall": "node-config-ts",
+    "postinstall": "tsc -p ./src",
+    "watch": "tsc -w -p .",
+    "map-debug": "env-cmd -f ./config/.env nodemon --legacy-watch --watch ./dist --inspect=0.0.0.0:9229 --nolazy ./dist/server.js"
   },
   "author": "",
   "license": "ISC",

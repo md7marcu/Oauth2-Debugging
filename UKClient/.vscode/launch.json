@@ -20,7 +20,23 @@
             "port": 9229,
             "restart":true
          },
-
+         {
+            "type": "node",
+            "request": "attach",
+            "name": "Attach to Docker - dist map",
+            "preLaunchTask": "tsc-watch",
+            "protocol":"auto",
+            "port": 9226,
+            "restart": true,
+            "localRoot": "${workspaceFolder}/dist",
+            "remoteRoot": "/dist",
+            "outFiles": [
+              "${workspaceFolder}/dist/**/*.js"
+            ],
+            "skipFiles": [
+              "<node_internals>/**/*.js",
+            ]
+          },
         {
             "type": "node",
             "request": "attach",
