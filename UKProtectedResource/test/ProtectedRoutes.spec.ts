@@ -13,16 +13,16 @@ interface IVerifyOptions extends VerifyOptions {
 }
 describe("Express routes", () => {
 
-    it("Should return 200 on alive endpoint", () => {
-        Supertest(app)
-        .get("/hello")
-        .expect(200);
+    it("Should return 200 on alive endpoint", async () => {
+        let response = await Supertest(app).get("/alive");
+
+        expect(response.status).to.be.equal(200);
     });
 
-    it("Should return 401 when no jwt token supplied", (done) => {
-        Supertest(app)
-            .get("/weight")
-            .expect(401,   done);
+    it("Should return 401 when no jwt token supplied", async () => {
+        let response = await Supertest(app).get("/weight");
+
+        expect(response.status).to.be.equal(401);
     });
 
     // Called with valid token and correct scope - return the protected resource

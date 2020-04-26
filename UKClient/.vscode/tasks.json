@@ -13,19 +13,38 @@
             "group": "build"
         },
         {
+            "label": "copyViews",
+            "type": "shell",
+            "command": "xcopy",
+            "args": [
+                "lib\\Views\\*",
+                "dist\\views\\*",
+                "/s",
+                "/i",
+                "/Y"
+            ]
+        },
+        {
             "label": "copyServerCert",
             "type": "shell",
             "command": "copy",
             "args": [
                 "..\\UKAuth\\Config\\cert.pem",
                 "config\\serverCert.pem",
-                ""
+                "-Force"
             ]
+        },
+        {
+            "label": "buildConfig",
+            "type": "shell",
+            "command": "npm run postinstall",
         },
         {
             "label": "build",
             "dependsOn": [
                 "compileTs",
+                "copyViews",
+                "buildConfig",
                 "copyServerCert",
             ]
         }

@@ -13,7 +13,13 @@ class App {
     constructor() {
         this.app = express();
         this.config();
-        this.mongoSetup(this.mongoUrl);
+
+        if ("development" === this.app.get("env")) {
+            process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+        }
+        if (this.mongoUrl) {
+            this.mongoSetup(this.mongoUrl);
+        }
         this.clientRoute.routes(this.app);
     }
 
@@ -24,6 +30,11 @@ class App {
         this.app.use(bodyParser.json());
         // support application/x-www-form-urlencoded post data
         this.app.use(bodyParser.urlencoded({ extended: false }));
+        // views
+        this.app.set("views", `${__dirname}/views`);
+        // App engine - html
+        this.app.set("view engine", "pug");
+        // this.app.engine("html", pug));
     }
 
     private mongoSetup(connectionString: string): void {

@@ -14,15 +14,15 @@ block content
                 h4 Redirect URI: #{client.redirectUris}
             p
             form(method="POST" action="allowRequest")
-                input(type="hidden" name="requestId" value="#{requestId}")
+                input(type="hidden" name="request_id" value=requestId)
 
                 if client.scopes 
                     h3.sub-heading  Allow access to the following scopes:
                     div
                       each scope, index in client.scopes    
                         p                      
-                            label.scope-label #[input.checkbox.scope-checkbox(type="checkbox" id=index name="#{scope}" checked )] #{scope}
+                            label.scope-label #[input.checkbox.scope-checkbox(type="checkbox" id=index name="scopes" value=scope checked )] #{scope}
                     div
-                    button.btn.btn-primary.col-sm-offset-2(type='submit') Allow
+                        button.btn.btn-primary.col-sm-offset-2(type='submit' name="allow" value="allow") Allow
 
                 

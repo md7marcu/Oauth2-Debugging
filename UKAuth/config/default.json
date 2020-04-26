@@ -3,9 +3,9 @@
     "audience": "api.ultrakompis.com",
     "subject": "ultrakompis",
     "algorithm": "RS256",
-    "authorizationEndpoint": "https://localhost:3001/authorize",
-    "accessTokenEndpoint": "https://localhost:3001/token",
-    "aliveEndpoint": "https://localhost:3001/alive",
+    "authorizationEndpoint": "https://localhost:3002/authorize",
+    "accessTokenEndpoint": "https://localhost:3002/token",
+    "aliveEndpoint": "https://localhost:3002/alive",
     "scopes": "weight",
     "verifyRedirectUrl": true,
     "verifyClientId": true,
@@ -21,7 +21,7 @@
         {
             "clientId": "ukauth-client",
             "clientSecret": "secretsecretsecret",
-            "redirectUris": ["http://localhost:3001/callback"],
+            "redirectUris": ["https://localhost:3000/authorizeCallback"],
             "scopes": ["weight", "something", "else"]
         }
     ],
@@ -30,5 +30,6 @@
     "addNonceToAccessToken": true,
     "saveAccessToken": true,
     "authorizationCodeGrant": "authorization_code",
-    "refreshTokenGrant": "refresh_token"
+    "refreshTokenGrant": "refresh_token",
+    "verifyState": true
 }

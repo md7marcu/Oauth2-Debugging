@@ -281,3 +281,5 @@ __pycache__/
 /Certificates
 dist/
 *.pem
+coverage/
+.nyc_output/

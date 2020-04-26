@@ -3,7 +3,7 @@ import * as express from "express";
 import * as bodyParser from "body-parser";
 import { AuthRoutes } from "./routes/AuthRoutes";
 import * as mongoose from "mongoose";
-import Db from "./db/Db";
+import Db from "./db/db";
 
 class App {
 
@@ -27,7 +27,7 @@ class App {
         // support application/json type post data
         this.app.use(bodyParser.json());
         // support application/x-www-form-urlencoded post data
-        this.app.use(bodyParser.urlencoded({ extended: true }));
+        this.app.use(bodyParser.urlencoded({ extended: false }));
         // serve static content
         this.app.use(express.static("public"));
         // views

@@ -9,13 +9,13 @@
             "type":"node",
             "request":"launch",
             "protocol":"inspector",
-            "cwd":"${workspaceFolder}",
-            "runtimeExecutable":"${workspaceFolder}/node_modules/.bin/env-cmd",
+            "cwd":"${workspaceRoot}",
+            "runtimeExecutable":"${workspaceRoot}/node_modules/.bin/env-cmd",
             "runtimeArgs": [               
                 "-f",
-                "${workspaceFolder}/config/.env",
-                "${workspaceFolder}/node_modules/.bin/ts-node-dev",
-                "${workspaceFolder}/lib/server.ts",
+                "${workspaceRoot}/config/.env",
+                "${workspaceRoot}/node_modules/.bin/ts-node-dev",
+                "${workspaceRoot}/lib/server.ts",
             ],
             "port": 9229,
             "restart":true
@@ -25,7 +25,7 @@
             "type": "node",
             "request": "attach",
             "name": "Docker: Attach to Node",
-            "port": 9228,
+            "port": 9226,
             "address": "localhost",
             "localRoot": "${workspaceFolder}",
             "remoteRoot": "/usr/src/app/",
@@ -40,7 +40,7 @@
             "program": "${workspaceFolder}/lib/server.ts",
             "cwd": "${workspaceFolder}",
             "protocol": "inspector",
-            "env": { "PORT":"3002" },
+            "env": { "PORT":"3000" },
             "outFiles": [
               "${workspaceFolder}/dist/**/*.js"
             ],
