@@ -2,13 +2,13 @@
     "responseType": "code",
     "authorizationEndpoint": "https://localhost:3002/authorize",
     "accessTokenEndpoint": "https://localhost:3002/token",
-    "protectedResource":   "https://localhost:3001/weight",
+    "protectedResource":   "https://localhost:3001/ssn",
     "clients": [
         {
             "clientId": "ukauth-client",
             "clientSecret": "secretsecretsecret",
             "redirectUris": ["https://localhost:3000/authorizeCallback"],
-            "scopes": ["weight", "something", "else"]
+            "scopes": ["ssn", "something", "else"]
         }
     ],
     "authorizationCodeGrant": "authorization_code",

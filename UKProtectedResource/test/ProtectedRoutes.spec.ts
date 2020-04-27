@@ -20,25 +20,25 @@ describe("Express routes", () => {
     });
 
     it("Should return 401 when no jwt token supplied", async () => {
-        let response = await Supertest(app).get("/weight");
+        let response = await Supertest(app).get("/ssn");
 
         expect(response.status).to.be.equal(401);
     });
 
     // Called with valid token and correct scope - return the protected resource
-    it("Should return the weight (3) when called with a valid token", (done) => {
+    it("Should return the ssn when called with a valid token", (done) => {
         let payload = {
             iss: config.issuer,
             aud: config.audience,
-            scope: "weight",
+            scope: "ssn",
             exp: Math.floor(Date.now() / 1000) + (60 * 60), // one hour expiration
             iat: Math.floor(Date.now() / 1000) - 30, // 30 seconds ago,
         };
 
         Supertest(app)
-        .get("/weight")
+        .get("/ssn")
         .set("Authorization", "Bearer " + createToken(payload))
-        .expect(200, { weight: "3" }, done);
+        .expect(200, { ssn: "555-32-2121" }, done);
     });
 
     // Troubleshooting key's

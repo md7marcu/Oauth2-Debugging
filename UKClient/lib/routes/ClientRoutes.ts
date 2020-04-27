@@ -1,12 +1,18 @@
 import { Request, Response } from "express";
 import * as buildUrl from "build-url";
-import { config } from "node-config-ts";
+import { config, Config } from "node-config-ts";
 import * as Debug from "debug";
 const debug = Debug("AuthClient");
 import * as request from "request-promise-native";
 import { find, remove } from "lodash";
 import Db from "../db/db";
+import ISecret from "interfaces/ISecret";
 
+interface IServiceDto {
+    statusCode: number;
+    hasError: boolean;
+    payload: any;
+}
 export class ClientRoutes {
     private secrets = [];
 
@@ -112,46 +118,160 @@ export class ClientRoutes {
 
             if (req.query) {
                 let accessToken = req.query.accessToken;
-                let secrets = find(this.secrets, (s) => s.accessToken === accessToken);
-
-                let protectedResource = this.getProtectedResource();
+                let secrets: ISecret = find(this.secrets, (s) => s.accessToken === accessToken);
 
                 if (!secrets) {
                     res.render("clientError", {title: config.title, error: "Invalid access token supplied."});
-                } else {
-                    let options = {
-                        method: "GET",
-                        uri: protectedResource,
-                        json: true,
-                        auth: {
-                            "bearer": accessToken,
-                        },
-                    };
-                    request.get(options)
-                    .then( (response) => {
-                        res.render(
-                            "index", {
-                                title: config.title,
-                                accessToken: secrets.accessToken,
-                                refreshToken: secrets.refreshToken,
-                                authorizationCode: secrets.code,
-                                protectedResource: response.weight,
-                            });
-                    })
-                    .catch( (err) => {
-                        res.render("clientError", { title: config.title, error: err });
 
-                        return;
-                    });
+                    return;
+                }
+                let protectedResourceResult: IServiceDto;
+
+                try {
+                    protectedResourceResult = await this.getProtectedResouce(accessToken);
+                } catch (err) {
+                    res.render("clientError", {title: config.title, error: "Unknown error."});
+
+                    return;
                 }
 
+                // If we're getting an (assumed) 401 from an expired token, we get a new one and retry the operation
+                if (protectedResourceResult.hasError && protectedResourceResult.statusCode === 401) {
+                    let result: IServiceDto;
+
+                    try {
+                        result = await this.getRefreshToken(secrets.refreshToken);
+                    } catch (err) {
+                        res.render("clientError", {title: config.title, error: "Unknown error."});
+                        return;
+                    }
+
+                    if (result.hasError){
+                        res.render("clientError", result.payload);
+                        return;
+                    }
+                    // Get the updated access token
+                    secrets = find(this.secrets, (s) => s.refreshToken === secrets.refreshToken);
+                    try{
+                        protectedResourceResult = await this.getProtectedResouce(secrets.accessToken);
+                    } catch (err) {
+                        res.render("clientError", {title: config.title, error: "Unknown Error."});
+                    }
+
+                    // unrecoverable error (unknown...)
+                    if (protectedResourceResult.hasError) {
+                        res.render("clientError", protectedResourceResult.payload);
+                        return;
+                    }
+                }
+                let payload = protectedResourceResult.payload;
+
+                if (!protectedResourceResult.hasError && payload) {
+                    payload.accessToken = secrets.accessToken;
+                    payload.refreshToken = secrets.refreshToken;
+                    payload.authorizationCode = secrets.code;
+                    res.render("index", payload);
+
+                    return;
+                }
             } else {
                 res.render("clientError", {title: config.title, error: "No access token supplied."});
+
+                return;
             }
+            res.render("clientError", {title: config.title, error: "Unknown error."});
         });
     }
+
+    async getProtectedResouce(accessToken): Promise<IServiceDto> {
+        let options = {
+            method: "GET",
+            uri: this.getProtectedResourceEndpoint(),
+            json: true,
+            auth: {
+                "bearer": accessToken,
+            },
+        };
+
+        try {
+            return await request.get(options)
+                .then( (response) => {
+                    return {
+                        hasError: false,
+                        payload: {
+                            title: config.title,
+                            protectedResource: response.ssn,
+                        },
+                    };
+                })
+                .catch((err) => {
+                    // If 401 - delete the token from db
+                    if (err?.statusCode === 401) {
+                        remove(this.secrets, (token) => {
+                            return token.accessToken === accessToken;
+                        });
+                    }
+                    return {
+                        hasError: true,
+                        statusCode: err?.statusCode,
+                        payload: {
+                            title: config.title,
+                            error: err?.message,
+                        }};
+                });
+            } catch (err) {
+                return {
+                    hasError: true,
+                    statusCode: 500,
+                    payload: {
+                        title: config.title,
+                        error: JSON.stringify(err),
+                    },
+                };
+            }
+    }
+
+    async getRefreshToken(refreshToken: string): Promise<IServiceDto> {
+        let data = {
+            grant_type: config.refreshTokenGrant,
+            client_id: config.clients[0].clientId,
+            client_secret: config.clients[0].clientSecret,
+            refresh_token: refreshToken,
+        };
+
+        let accessTokenEndpoint = this.getAccessTokenEndpoint();
+        let options = {
+            method: "POST",
+            uri: accessTokenEndpoint,
+            body: data,
+            json: true,
+        };
+
+        try {
+            return await request(options)
+                .then((body) => {
+                    this.secrets.push({
+                        accessToken: body.access_token,
+                        refreshToken: refreshToken,
+                    });
+                    return {hasError: false, statusCode: 200, payload: { accessToken: body.access_token, refreshToken: refreshToken}};
+                })
+                .catch((err) => {
+                    return {hasError: true, statusCode: 500, payload: { title: config.title, error: err }};
+                });
+        } catch (err) {
+            return {
+                hasError: true,
+                statusCode: 500,
+                payload: {
+                    title: config.title,
+                    error: JSON.stringify(err),
+                },
+            };
+        }
+    }
     // If we're running from the parent docker compose we need to get the host name of the protected resource
-    getProtectedResource() {
+    getProtectedResourceEndpoint() {
         return process.env.protectedResource ? process.env.protectedResource : config.protectedResource;
     }
     // If we're running from the parent docker compose we need to get the host name of the protected resource

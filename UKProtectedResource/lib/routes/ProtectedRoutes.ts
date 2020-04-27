@@ -14,7 +14,7 @@ export interface IRequest extends Request {
 }
 
 export class ResourceRoutes {
-    private weight = 3;
+    private ssn = "555-32-2121";
     private AUTH_HEADER = "authorization";
 
     public routes(app: Application): void {
@@ -23,17 +23,17 @@ export class ResourceRoutes {
             res.send("Success!");
         });
 
-        app.get("/weight", this.retrieveAccessToken, this.requireAccessToken, async(req: IRequest, res: Response, next: NextFunction) => {
-            debug("weight endpoint called.");
+        app.get("/ssn", this.retrieveAccessToken, this.requireAccessToken, async(req: IRequest, res: Response, next: NextFunction) => {
+            debug("ssn endpoint called.");
 
             // tslint:disable-next-line:whitespace
-            if (includes((req?.access_token as any)?.scope, "weight")) {
-                res.send({weight: this.weight.toString()});
+            if (includes((req?.access_token as any)?.scope, "ssn")) {
+                res.send({ssn: this.ssn.toString()});
             } else {
                 res.status(403).send();
                 next("Forbidden");
             }
-            debug(`sent weight ${this.weight}`);
+            debug(`sent ssn ${this.ssn}`);
             next();
         });
     }
@@ -52,8 +52,8 @@ export class ResourceRoutes {
             let options = this.getVerifyOptions();
             decodedToken = verify(accessToken, publicKey, options);
         } catch (err) {
-            debug(`Verifying accessToken failed ${JSON.stringify(err)}`);
-            res.status(401).send();
+            debug(`Verifying accessToken failed: ${err.message}`);
+            res.status(401).send(JSON.stringify(err));
             // tslint:disable-next-line:whitespace
             next(err?.message);
         }

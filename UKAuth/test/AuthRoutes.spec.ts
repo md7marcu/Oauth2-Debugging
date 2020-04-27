@@ -62,7 +62,7 @@ describe("Express routes", () => {
             {
                 client_id: config.clients[0].clientId,
                 redirect_uri: config.clients[0].redirectUris[0],
-                scopes: ["weight"],
+                scopes: ["ssn"],
             });
 
         expect(response.status).to.be.equal(200);
@@ -146,7 +146,7 @@ describe("Express routes", () => {
     it("Should return 200 and token", async () => {
         let code = "abc123";
         let clientId = config.clients[0].clientId;
-        db.saveAuthorizationCode(code, {request: {client_id: clientId, scopes: ["weight"]}});
+        db.saveAuthorizationCode(code, {request: {client_id: clientId, scopes: ["ssn"]}});
 
         const response = await Supertest(app)
         .post("/token")
@@ -167,8 +167,8 @@ describe("Express routes", () => {
     it("Should return 400 when called with refresh_token grant with erroneous clientId", async () => {
         let code = "abc123";
         let clientId = config.clients[0].clientId;
-        db.saveAuthorizationCode(code, {request: {clientId: clientId, scopes: ["weight"]}});
-        db.saveRefreshToken("cba321", "3232", ["weight"]);
+        db.saveAuthorizationCode(code, {request: {clientId: clientId, scopes: ["ssn"]}});
+        db.saveRefreshToken("cba321", "3232", ["ssn"]);
 
         const response = await Supertest(app)
         .post("/token")
@@ -189,8 +189,8 @@ describe("Express routes", () => {
         let code = "abc123";
         let clientId = config.clients[0].clientId;
         let refreshToken = "cba321-2";
-        db.saveAuthorizationCode(code, {request: {clientId: clientId, scopes: ["weight"]}});
-        db.saveRefreshToken(refreshToken, clientId, ["weight"]);
+        db.saveAuthorizationCode(code, {request: {clientId: clientId, scopes: ["ssn"]}});
+        db.saveRefreshToken(refreshToken, clientId, ["ssn"]);
 
         const response = await Supertest(app)
         .post("/token")
@@ -206,6 +206,6 @@ describe("Express routes", () => {
         expect(response.status).to.be.equal(200);
 
         // tslint:disable-next-line:no-unused-expression
-        expect(db.validAccessToken(JSON.parse(response.text).accessToken)).to.be.true;
+        expect(db.validAccessToken(JSON.parse(response.text).access_token)).to.be.true;
     });
 });

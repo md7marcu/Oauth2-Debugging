@@ -19,7 +19,7 @@ services:
         command: "npm run map-debug"
     client:
         environment:
-            - protectedResource=https://protected-resource:3001/weight
+            - protectedResource=https://protected-resource:3001/ssn
             - accessTokenEndpoint=https://authorization-server:3002/token
             - authorizationEndpoint=https://authorization-server:3002/authorize
         links: 

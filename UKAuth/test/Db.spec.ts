@@ -10,7 +10,7 @@ describe ("Static Db implementation", () => {
     });
 
     it ("Should return the client", () => {
-        assert.equal(new Db().getClient("ukauth-client").scopes[0], "weight");
+        assert.equal(new Db().getClient("ukauth-client").scopes[0], "ssn");
     });
 
     it ("Should save a request", () => {

@@ -245,8 +245,6 @@ export class AuthRoutes {
                 if (refreshToken) {
                     debug("Verified refresh token.");
 
-                    // TODO: The way this is setup, we wouldn't really be able to do anything with this
-                    // Another valid clientId <= might be able to do it, VERIFY
                     if (config.verifyClientId && refreshToken.clientId !== clientId) {
                          debug("Client mismatch on refresh token.");
                          res.status(400).send("Invalid refresh token.");
@@ -259,7 +257,7 @@ export class AuthRoutes {
                     if (config.saveAccessToken) {
                         db.saveAccessToken(accessToken, clientId);
                     }
-                    res.status(200).send({accessToken: accessToken, refreshToken: refreshToken });
+                    res.status(200).send({access_token: accessToken, refresh_token: refreshToken.refreshToken });
                 } else {
                     debug("Called with invalid refresh token");
                     res.status(400).send("Invalid Code.");

@@ -10,6 +10,10 @@ export default class Db {
         return find(this.secrets, (s) => { return s.accessToken === accessToken; });
     }
 
+    public getSecretWithRefresh(refreshToken: string): ISecret {
+        return find(this.secrets, (s) => { return s.refreshToken === refreshToken; });
+    }
+
     // Stores a secret
     public saveSecret(secret: ISecret) {
         this.secrets.push(secret);
