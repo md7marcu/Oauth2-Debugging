@@ -4,7 +4,6 @@ import { config, Config } from "node-config-ts";
 import * as Debug from "debug";
 const debug = Debug("AuthClient");
 import * as request from "request-promise-native";
-import { find, remove } from "lodash";
 import Db from "../db/db";
 import ISecret from "interfaces/ISecret";
 
@@ -14,8 +13,6 @@ interface IServiceDto {
     payload: any;
 }
 export class ClientRoutes {
-    private secrets = [];
-
     public routes(app): void {
         let db: Db = app.Db;
 
@@ -60,8 +57,8 @@ export class ClientRoutes {
 
                 return;
             }
-            let code = req?.query?.code ?? undefined;
-            let state = req?.query?.state ?? undefined;
+            let code: string = (req?.query?.code ?? undefined) as string;
+            let state: string = (req?.query?.state ?? undefined) as string;
 
             if (config.verifyState){
                 let savedState: string = db.popState();
@@ -92,12 +89,7 @@ export class ClientRoutes {
 
             request(options)
             .then((body) => {
-                this.secrets.push({
-                    accessToken: body.access_token,
-                    refreshToken: body.refresh_token,
-                    code: code,
-                });
-
+                db.saveSecret({accessToken: body.access_token, refreshToken: body.refresh_token, code: code});
                 res.render("index", {
                     title: config.title,
                     accessToken: body.access_token,
@@ -117,10 +109,10 @@ export class ClientRoutes {
             debug(`getResource endpoint called.`);
 
             if (req.query) {
-                let accessToken = req.query.accessToken;
-                let secrets: ISecret = find(this.secrets, (s) => s.accessToken === accessToken);
+                let accessToken: string = req.query.accessToken as string;
+                let secret: ISecret = db.getSecret(accessToken);
 
-                if (!secrets) {
+                if (!secret) {
                     res.render("clientError", {title: config.title, error: "Invalid access token supplied."});
 
                     return;
@@ -128,7 +120,7 @@ export class ClientRoutes {
                 let protectedResourceResult: IServiceDto;
 
                 try {
-                    protectedResourceResult = await this.getProtectedResouce(accessToken);
+                    protectedResourceResult = await this.getProtectedResouce(db, accessToken);
                 } catch (err) {
                     res.render("clientError", {title: config.title, error: "Unknown error."});
 
@@ -140,7 +132,7 @@ export class ClientRoutes {
                     let result: IServiceDto;
 
                     try {
-                        result = await this.getRefreshToken(secrets.refreshToken);
+                        result = await this.getRefreshToken(db, secret.refreshToken);
                     } catch (err) {
                         res.render("clientError", {title: config.title, error: "Unknown error."});
                         return;
@@ -150,10 +142,11 @@ export class ClientRoutes {
                         res.render("clientError", result.payload);
                         return;
                     }
-                    // Get the updated access token
-                    secrets = find(this.secrets, (s) => s.refreshToken === secrets.refreshToken);
+                    // Get the new access token
+                    secret = db.getSecretWithRefresh(secret.refreshToken);
+
                     try{
-                        protectedResourceResult = await this.getProtectedResouce(secrets.accessToken);
+                        protectedResourceResult = await this.getProtectedResouce(db, secret.accessToken);
                     } catch (err) {
                         res.render("clientError", {title: config.title, error: "Unknown Error."});
                     }
@@ -167,9 +160,9 @@ export class ClientRoutes {
                 let payload = protectedResourceResult.payload;
 
                 if (!protectedResourceResult.hasError && payload) {
-                    payload.accessToken = secrets.accessToken;
-                    payload.refreshToken = secrets.refreshToken;
-                    payload.authorizationCode = secrets.code;
+                    payload.accessToken = secret.accessToken;
+                    payload.refreshToken = secret.refreshToken;
+                    payload.authorizationCode = secret.code;
                     res.render("index", payload);
 
                     return;
@@ -183,7 +176,7 @@ export class ClientRoutes {
         });
     }
 
-    async getProtectedResouce(accessToken): Promise<IServiceDto> {
+    async getProtectedResouce(db: Db, accessToken: string): Promise<IServiceDto> {
         let options = {
             method: "GET",
             uri: this.getProtectedResourceEndpoint(),
@@ -207,9 +200,7 @@ export class ClientRoutes {
                 .catch((err) => {
                     // If 401 - delete the token from db
                     if (err?.statusCode === 401) {
-                        remove(this.secrets, (token) => {
-                            return token.accessToken === accessToken;
-                        });
+                        db.removeSecret(accessToken);
                     }
                     return {
                         hasError: true,
@@ -231,7 +222,7 @@ export class ClientRoutes {
             }
     }
 
-    async getRefreshToken(refreshToken: string): Promise<IServiceDto> {
+    async getRefreshToken(db: Db, refreshToken: string): Promise<IServiceDto> {
         let data = {
             grant_type: config.refreshTokenGrant,
             client_id: config.clients[0].clientId,
@@ -250,10 +241,7 @@ export class ClientRoutes {
         try {
             return await request(options)
                 .then((body) => {
-                    this.secrets.push({
-                        accessToken: body.access_token,
-                        refreshToken: refreshToken,
-                    });
+                    db.saveSecret({accessToken: body.access_token, refreshToken: refreshToken, code: undefined});
                     return {hasError: false, statusCode: 200, payload: { accessToken: body.access_token, refreshToken: refreshToken}};
                 })
                 .catch((err) => {

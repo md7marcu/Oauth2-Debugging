@@ -1,7 +1,8 @@
-import { find } from "lodash";
+import { find, remove } from "lodash";
 import ISecret from "interfaces/ISecret";
 
 export default class Db {
+
     private secrets = [];
     private states = []; // should only contain the last state
 
@@ -25,5 +26,11 @@ export default class Db {
 
     public popState(): string {
         return this.states.pop();
+    }
+
+    public removeSecret(accessToken: string) {
+        remove(this.secrets, (secret) => {
+            return secret.accessToken === accessToken;
+        });
     }
 }
