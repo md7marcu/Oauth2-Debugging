@@ -267,7 +267,6 @@ export class ClientRoutes {
         return process.env.accessTokenEndpoint ? process.env.accessTokenEndpoint : config.accessTokenEndpoint;
     }
 
-    // TODO: Duplicated with UKAuth
     getRandomString(tokenLength: number): string {
         // tslint:disable-next-line:no-bitwise
         return [...Array(tokenLength)].map(i => (~~(Math.random() * 36)).toString(36)).join("");

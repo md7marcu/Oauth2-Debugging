@@ -5,33 +5,25 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "node",
-            "request": "attach",
-            "name": "Docker: Attach to Node",
-            "port": 9227,
-            "address": "localhost",
-            "localRoot": "${workspaceFolder}",
-            "remoteRoot": "/usr/src/app/",
-            "protocol": "inspector",
-            "restart": true // if nodemon restarts - reconnect the debugger,
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Debug TypeScript in Node.js",
-            "preLaunchTask": "build",
-            "program": "${workspaceFolder}/lib/server.ts",
-            "cwd": "${workspaceFolder}",
-            "protocol": "inspector",
-            "env": { "PORT":"3001" },
-            "outFiles": [
-              "${workspaceFolder}/dist/**/*.js"
+            "name":"Launch via nodemon",
+            "type":"node",
+            "request":"launch",
+            "protocol":"inspector",
+            "cwd":"${workspaceFolder}",
+            "runtimeExecutable":"${workspaceFolder}/node_modules/.bin/env-cmd",
+            "runtimeArgs": [               
+                "-f",
+                "${workspaceFolder}/config/.env",
+                "${workspaceFolder}/node_modules/.bin/ts-node-dev",
+                "${workspaceFolder}/lib/server.ts",
             ],
-        },
+            "port": 9229,
+            "restart":true
+         },
         {
             "type": "node",
             "request": "attach",
-            "name": "Attach to Docker - dist map",
+            "name": "Docker: Attach - js",
             "preLaunchTask": "tsc-watch",
             "protocol":"auto",
             "port": 9227,
@@ -48,7 +40,20 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Mocha All",
+            "name": "Debug TypeScript in Node",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/lib/server.ts",
+            "cwd": "${workspaceFolder}",
+            "protocol": "inspector",
+            "env": { "PORT":"3001" },
+            "outFiles": [
+              "${workspaceFolder}/dist/**/*.js"
+            ],
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Mocha",
             "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
             "args": [
                 "-r",

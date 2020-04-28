@@ -20,22 +20,10 @@
             "port": 9229,
             "restart":true
          },
-
         {
             "type": "node",
             "request": "attach",
-            "name": "Docker: Attach to Node",
-            "port": 9228,
-            "address": "localhost",
-            "localRoot": "${workspaceFolder}",
-            "remoteRoot": "/usr/src/app/",
-            "protocol": "inspector",
-            "restart": true // if nodemon restarts - reconnect the debugger,
-        },
-        {
-            "type": "node",
-            "request": "attach",
-            "name": "Attach to Docker - dist map",
+            "name": "Docker: Attach - js",
             "preLaunchTask": "tsc-watch",
             "protocol":"auto",
             "port": 9228,
@@ -52,7 +40,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Debug TypeScript in Node.js",
+            "name": "Debug TypeScript in Node",
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/lib/server.ts",
             "cwd": "${workspaceFolder}",
@@ -65,7 +53,7 @@
           {
             "type": "node",
             "request": "launch",
-            "name": "Mocha All",
+            "name": "Debug Mocha",
             "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
             "args": [
                 "-r",

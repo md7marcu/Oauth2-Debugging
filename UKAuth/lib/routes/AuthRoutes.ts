@@ -118,7 +118,6 @@ export class AuthRoutes {
                 // Authorization code request
                 if (query.response_type === "code") {
                     // Verify scopes - should be the same as the clients scope
-                    // TODO: Verify that it works with several scopes
                     let selectedScopes = req.body.scopes;
                     let client: IClient = db.getClient(query.client_id);
                     let invalidScopes = this.verifyScope(selectedScopes, client.scopes);
@@ -171,10 +170,11 @@ export class AuthRoutes {
                 clientId = req.body.client_id;
                 clientSecret = req.body.client_secret;
             } else {
-                // TODO: Check header for clientId and secret? Check standard if that is in fact valid
-                // basic auth clientid:clientsecret
+                // TODO: Check header for clientId and secret
+                // basic auth clientid:clientsecret	var headers = {
+                // header "Authorization": "Basic "  + client_id ":" client_secret
                 debug(`Client id or secret are invalid ${req.body.client_id}/${req.body.client_secret}`);
-                res.status(401).send("Client Id and/or Client Secret.");
+                res.status(401).send("Client Id/Client Secret basic auth not supported.");
 
                 return;
             }
