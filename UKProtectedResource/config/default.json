@@ -1,0 +1,11 @@
+{    
+    "issuer": "authorize.ultrakompis.com",
+    "audience": "api.ultrakompis.com",
+    "verifyIssuer": true,
+    "verifyAudience": true,
+    "ignoreNotBefore": false,
+    "ignoreExpiration": false,
+    "algorithm": "RS256",
+    "serverCert": "/config/AuthServerCert.pem",
+    "serverKey": "../UKAuth/config/key.pem"
+}

@@ -1,0 +1,8 @@
+{
+  "name": "UKAuth",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "start": "(cd UKAUth && npm run dev) & (cd UKClient && npm run dev) & (cd UKProtectedResource && npm run dev)"
+  }
+}

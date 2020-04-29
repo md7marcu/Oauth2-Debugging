@@ -1,0 +1,50 @@
+version: "3"
+
+networks:
+    ukauth-network:
+      driver: bridge
+
+services:
+    authorization-server:
+        networks:
+            - ukauth-network
+        build: ./UKAuth
+        volumes:
+          - ./UKAUth/dist:/usr/src/app/dist
+          - /usr/src/app/node_modules
+        ports:
+          - 3002:3002
+          - 9228:9229
+        working_dir: /usr/src/app
+        command: "npm run map-debug"
+    client:
+        environment:
+            - protectedResource=https://protected-resource:3001/ssn
+            - accessTokenEndpoint=https://authorization-server:3002/token
+            - authorizationEndpoint=https://authorization-server:3002/authorize
+        links: 
+            - "protected-resource"
+            - "authorization-server"
+        networks:
+            - ukauth-network
+        build: ./UKClient
+        volumes:
+            - ./UKClient/dist:/usr/src/app/dist
+            - /usr/src/app/node_modules
+        ports:
+            - 3000:3000
+            - 9226:9229
+        working_dir: /usr/src/app
+        command: "npm run map-debug"
+    protected-resource:
+        networks:
+            - ukauth-network
+        build: ./UKProtectedResource
+        volumes:
+            - ./UKProtectedResource/dist:/usr/src/app/dist
+            - /usr/src/app/node_modules
+        ports:
+            - 3001:3001
+            - 9227:9229
+        working_dir: /usr/src/app
+        command: "npm run map-debug"

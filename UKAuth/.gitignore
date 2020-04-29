@@ -279,4 +279,7 @@ __pycache__/
 /yarn.lock
 /package-lock.json
 /Certificates
-/GarageWebApi/Debug_Home_Automation_client-cert.pem
+dist/
+*.pem
+coverage/
+.nyc_output/
