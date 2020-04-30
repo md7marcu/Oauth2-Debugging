@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "build": "(cd UKAUth && npm run build) & (cd UKClient && npm run build) & (cd UKProtectedResource && npm run build)"
-    "start": "(cd UKAUth && npm run dev) & (cd UKClient && npm run dev) & (cd UKProtectedResource && npm run dev)"
+    "install": "(cd UKAUth && npm install) & (cd UKClient && npm install) & (cd UKProtectedResource && npm install)",
+    "build": "(cd UKAUth && npm run build) & (cd UKClient && npm run build) & (cd UKProtectedResource && npm run build)",
+    "clean": "(cd UKAUth && rm -rf ./dist) & (cd UKClient && rm -rf ./dist) & (cd UKProtectedResource && rm -rf ./dist)"
   },
   "dependencies": {
-    "cpx": "^1.5.0"
   }
 }
