@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import * as buildUrl from "build-url";
 import { config, Config } from "node-config-ts";
 import * as Debug from "debug";
-const debug = Debug("AuthClient");
+const debug = Debug("ClientRoutes");
 import * as request from "request-promise-native";
 import Db from "../db/db";
 import ISecret from "interfaces/ISecret";

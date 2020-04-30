@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc && cp ../UKAuth/config/cert.pem config/serverCert.pem",
-    "dev": "env-cmd -f ./config/.env ts-node-dev --inspect=0.0.0.0:9229 -- ./lib/server.ts",
+    "dev": "env-cmd -f ./config/.env ts-node-dev --inspect=0.0.0.0:9227 -- ./lib/server.ts",
     "start": "env-cmd -f ./config/.env nodemon ./dist/server.js",
     "prod": "env-cmd -f ./config/.env npm run build && npm run start",
     "test": "mocha -r ts-node/register test/**/*.spec.ts",

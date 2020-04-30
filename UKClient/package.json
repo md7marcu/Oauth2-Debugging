@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc && cp -R lib/views dist && cp -R public dist/public",
-    "dev": "cp -R lib/views dist && cp -R public dist/public && env-cmd -f ./config/.env ts-node-dev --inspect=0.0.0.0:9229 -- ./lib/server.ts",
+    "dev": "cp -R lib/views dist && cp -R public dist/public && env-cmd -f ./config/.env ts-node-dev --inspect=0.0.0.0:9226 -- ./lib/server.ts",
     "start": "cp -R lib/views dist && cp -R public dist/public && env-cmd -f ./config/.env nodemon ./dist/server.js",
     "prod": "env-cmd -f ./config/.env npm run build && npm run start",
     "test": "cp -R lib/views dist && cp -R public dist/public && mocha -r ts-node/register test/**/*.spec.ts",
