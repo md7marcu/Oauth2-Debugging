@@ -27,6 +27,7 @@ declare module "node-config-ts" {
     saveAccessToken: boolean
     authorizationCodeGrant: string
     refreshTokenGrant: string
+    verifyState: boolean
   }
   interface Client {
     clientId: string

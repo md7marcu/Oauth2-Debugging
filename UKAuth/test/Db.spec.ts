@@ -1,5 +1,5 @@
 import { expect, assert } from "chai";
-import Db from "../lib/db/Db";
+import Db from "../lib/db/db";
 import { Guid } from "guid-typescript";
 
 describe ("Static Db implementation", () => {

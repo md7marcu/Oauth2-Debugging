@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
+    "build": "(cd UKAUth && npm run build) & (cd UKClient && npm run build) & (cd UKProtectedResource && npm run build)"
     "start": "(cd UKAUth && npm run dev) & (cd UKClient && npm run dev) & (cd UKProtectedResource && npm run dev)"
+  },
+  "dependencies": {
+    "cpx": "^1.5.0"
   }
 }

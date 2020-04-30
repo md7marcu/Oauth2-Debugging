@@ -6,6 +6,6 @@
     "ignoreNotBefore": false,
     "ignoreExpiration": false,
     "algorithm": "RS256",
-    "serverCert": "/config/AuthServerCert.pem",
+    "serverCert": "/config/serverCert.pem",
     "serverKey": "../UKAuth/config/key.pem"
 }

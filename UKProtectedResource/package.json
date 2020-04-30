@@ -4,16 +4,16 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && cp ../UKAuth/config/cert.pem config/serverCert.pem",
     "dev": "env-cmd -f ./config/.env ts-node-dev --inspect=0.0.0.0:9229 -- ./lib/server.ts",
     "start": "env-cmd -f ./config/.env nodemon ./dist/server.js",
     "prod": "env-cmd -f ./config/.env npm run build && npm run start",
     "test": "mocha -r ts-node/register test/**/*.spec.ts",
     "test-dev": "nodemon --watch . --ext ts --exec \"mocha -r ts-node/register test/**/*.spec.ts\"",
     "coverage": "nyc -r lcov -e .ts -x \"*.spec.ts\" mocha -r ts-node/register test/**/*.spec.ts",
-    "postinstall": "tsc -p ./src && node-config-ts",
+    "postinstall": "node-config-ts",
     "watch": "tsc -w -p .",
-    "map-debug": "env-cmd -f ./config/.env nodemon --legacy-watch --watch ./dist --inspect=0.0.0.0:9229 --nolazy ./dist/server.js"
+    "map-debug": "tsc && env-cmd -f ./config/.env nodemon --legacy-watch --watch ./dist --inspect=0.0.0.0:9229 --nolazy ./dist/server.js"
   },
   "author": "",
   "license": "ISC",

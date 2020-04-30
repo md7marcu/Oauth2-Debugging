@@ -2,24 +2,18 @@
 import * as express from "express";
 import * as bodyParser from "body-parser";
 import { AuthRoutes } from "./routes/AuthRoutes";
-import * as mongoose from "mongoose";
 import Db from "./db/db";
 
 class App {
 
     public app: express.Application;
     public authRoute: AuthRoutes = new AuthRoutes();
-    public mongoUrl = process.env.MONGODB_URL;
 
     constructor() {
         this.app = express();
         // Create the "database"
         (this.app as any).Db = new Db();
         this.config();
-
-        if (this.mongoUrl) {
-            this.mongoSetup(this.mongoUrl);
-        }
         this.authRoute.routes(this.app);
     }
 
@@ -36,16 +30,6 @@ class App {
         this.app.set("view engine", "pug");
         // this.app.engine("html", pug));
     }
-
-    private mongoSetup(connectionString: string): void {
-        // mongoose.Promise = global.Promise;
-        mongoose.connect(connectionString, {
-            useNewUrlParser: true,
-            useCreateIndex: true,
-            useUnifiedTopology: true,
-        });
-    }
-
 }
 
 export default new App().app;

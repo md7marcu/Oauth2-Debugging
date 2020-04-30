@@ -2,21 +2,15 @@
 import * as express from "express";
 import * as bodyParser from "body-parser";
 import { ResourceRoutes } from "./routes/ProtectedRoutes";
-import * as mongoose from "mongoose";
 
 class App {
 
     public app: express.Application;
     public protectedRoute: ResourceRoutes = new ResourceRoutes();
-    public mongoUrl = process.env.MONGODB_URL;
 
     constructor() {
         this.app = express();
         this.config();
-
-        if (this.mongoUrl) {
-            this.mongoSetup(this.mongoUrl);
-        }
         this.protectedRoute.routes(this.app);
     }
 
@@ -26,16 +20,6 @@ class App {
         // support application/x-www-form-urlencoded post data
         this.app.use(bodyParser.urlencoded({ extended: false }));
     }
-
-    private mongoSetup(connectionString: string): void {
-        // mongoose.Promise = global.Promise;
-        mongoose.connect(connectionString, {
-            useNewUrlParser: true,
-            useCreateIndex: true,
-            useUnifiedTopology: true,
-        });
-    }
-
 }
 
 export default new App().app;

@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import Db from "../lib/db/Db";
+import Db from "../lib/db/db";
 import ISecret from "../lib/interfaces/ISecret";
 
 describe ("Static Db implementation", () => {
