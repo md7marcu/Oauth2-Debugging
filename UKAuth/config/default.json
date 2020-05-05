@@ -23,6 +23,12 @@
             "clientSecret": "secretsecretsecret",
             "redirectUris": ["https://localhost:3000/authorizeCallback"],
             "scopes": ["ssn", "something", "else"]
+        },
+        {
+            "clientId": "FSB",
+            "clientSecret": "secretsecretsecret",
+            "redirectUris": ["https://localhost:5000/callback"],
+            "scopes": ["ssn"]
         }
     ],
     "expiryTime": 3600,

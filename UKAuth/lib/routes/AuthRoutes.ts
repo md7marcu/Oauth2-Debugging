@@ -84,6 +84,9 @@ export class AuthRoutes {
             let requestId = Guid.create();
             db.saveRequest(requestId, req?.query);
 
+            if (config.denyFraming) {
+                res.set("X-Frame-Options", "DENY"); // Do not allow this page to be framed
+            }
             // 5. Serve page and let user approve authorization
             res.render("allowRequest", { client: client, requestId: requestId.toString(), scopes: queryScopes});
         });
