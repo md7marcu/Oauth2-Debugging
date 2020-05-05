@@ -1,0 +1,18 @@
+.App {
+  text-align: center;
+}
+.App-victim-iframe { 
+  top:0; left:-20px;
+  opacity: 0.0;
+  z-index: 1;
+}
+
+.App-clickjack-button {
+  color: #008000;
+  position:absolute;
+  left: 58px;
+  top: 378px;
+  font-size:20px;
+  padding: 6px;
+  z-index:-1
+}

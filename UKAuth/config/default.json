@@ -37,5 +37,7 @@
     "saveAccessToken": true,
     "authorizationCodeGrant": "authorization_code",
     "refreshTokenGrant": "refresh_token",
-    "verifyState": true
+    "verifyState": true,
+    "Comment_denyFraming": "Set denyFraming to true to mitigate Clickjacking",
+    "denyFraming": false
 }
