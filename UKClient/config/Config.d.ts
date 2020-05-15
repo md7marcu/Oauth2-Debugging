@@ -2,6 +2,8 @@
 /* eslint-disable */
 declare module "node-config-ts" {
   interface IConfig {
+    issuer: string
+    audience: string
     responseType: string
     authorizationEndpoint: string
     accessTokenEndpoint: string
@@ -11,6 +13,11 @@ declare module "node-config-ts" {
     refreshTokenGrant: string
     verifyState: boolean
     title: string
+    verifyIss: boolean
+    verifyAud: boolean
+    verifyIat: boolean
+    verifyExp: boolean
+    verifyNonce: boolean
   }
   interface Client {
     clientId: string

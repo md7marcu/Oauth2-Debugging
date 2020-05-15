@@ -231,7 +231,7 @@ export class AuthRoutes {
                         let resultPayload = {access_token: accessToken, refresh_token: refreshToken };
 
                         if (openIdConnectFlow) {
-                            (resultPayload as any).id_token = this.signToken(this.buildIdToken(req.body.authorization_code, db));
+                            (resultPayload as any).id_token = this.signToken(this.buildIdToken(req.body.authorization_code,  clientId, db));
                         }
                         res.status(200).send(resultPayload);
 
@@ -291,13 +291,13 @@ export class AuthRoutes {
     }
 
     // Create an id token for OpenId Connect flow
-    buildIdToken(authorizationCode: any, db: Db): IVerifyOptions {
+    buildIdToken(authorizationCode: any, client_id: string, db: Db): IVerifyOptions {
         let user = db.getUserFromCode(authorizationCode);
 
         return {
             iss: config.issuer,
             sub: user.userId,
-            aud: config.clients[1].client_id,
+            aud: client_id,
             exp: Math.floor(Date.now() / 1000) + config.expiryTime,
             iat: Math.floor(Date.now() / 1000) - config.createdTimeAgo,
             auth_time: user.lastAuthenticated,

@@ -1,4 +1,6 @@
 {    
+    "issuer": "authorize.ultrakompis.com",
+    "audience": "api.ultrakompis.com",
     "responseType": "code",
     "authorizationEndpoint": "https://localhost:3002/authorize",
     "accessTokenEndpoint": "https://localhost:3002/token",
@@ -20,5 +22,10 @@
     "authorizationCodeGrant": "authorization_code",
     "refreshTokenGrant": "refresh_token",
     "verifyState": true,
-    "title": "Client"
+    "title": "Client",
+    "verifyIss": true,
+    "verifyAud": true,
+    "verifyIat": true,
+    "verifyExp": true,
+    "verifyNonce": true        
 }

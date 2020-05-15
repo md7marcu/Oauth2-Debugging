@@ -1,12 +1,15 @@
 import { Request, Response } from "express";
 import * as buildUrl from "build-url";
-import { config, Config } from "node-config-ts";
+import { config } from "node-config-ts";
 import * as Debug from "debug";
 const debug = Debug("ClientRoutes");
 import * as request from "request-promise-native";
 import Db from "../db/db";
 import ISecret from "interfaces/ISecret";
 import { find } from "lodash";
+import * as jwt from "jsonwebtoken";
+import * as fs from "fs";
+import { IVerifyOptions } from "interfaces/IVerifyOptions";
 
 interface IServiceDto {
     statusCode: number;
@@ -79,12 +82,6 @@ export class ClientRoutes {
             res.redirect(authorize);
         });
 
-                // aud has to be clientid
-        // issuer must match iss claim (obtained during discovery)
-        // current time must be before exp
-        // iat
-        // send back nonce
-
         app.get("/authorizeCallback", async(req: Request, res: Response) => {
             debug(`authorizeCallback endpoint called.`);
 
@@ -130,6 +127,10 @@ export class ClientRoutes {
             request(options)
             .then((body) => {
                 db.saveSecret({accessToken: body.access_token, refreshToken: body.refresh_token, idToken: body.id_token, code: code});
+
+                if (!this.verifyIdToken(body.id_token, clientId)) {
+                    res.render("clientError", { title: config.title, error: "Id token is invalid."} );
+                }
                 res.render("index", {
                     title: config.title,
                     accessToken: body.access_token,
@@ -300,6 +301,29 @@ export class ClientRoutes {
             };
         }
     }
+
+    verifyIdToken(idToken: any, clientId: string) {
+        let cert = fs.readFileSync("./config/serverCert.pem");
+        let decodedToken = jwt.verify(idToken, cert);
+
+        if (config.verifyIss && (decodedToken as IVerifyOptions).iss !== config.issuer) {
+            return false;
+        }
+        if (config.verifyAud && (decodedToken as IVerifyOptions).aud !== clientId) {
+            return false;
+        }
+        if (config.verifyIat &&  (decodedToken as IVerifyOptions).iat > Math.floor(Date.now() / 1000)) {
+            return false;
+        }
+        if (config.verifyExp && (decodedToken as IVerifyOptions).exp < Math.floor(Date.now() / 1000)) {
+            return false;
+        }
+        // TODO MPGB 5/14/20: store nonce and pass it in to be verified
+        // if (config.verifyIdToken.verifyNonce ) {
+        // }
+        return true;
+    }
+
     // If we're running from the parent docker compose we need to get the host name of the protected resource
     getProtectedResourceEndpoint() {
         return process.env.protectedResource ? process.env.protectedResource : config.protectedResource;
