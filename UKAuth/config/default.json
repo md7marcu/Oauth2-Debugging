@@ -23,6 +23,20 @@
             "clientSecret": "secretsecretsecret",
             "redirectUris": ["https://localhost:3000/authorizeCallback"],
             "scopes": ["ssn", "something", "else"]
+        },
+        {
+            "clientId": "authenticate",
+            "clientSecret": "othersecret",
+            "redirectUris": ["https://localhost:3000/authorizeCallback"],
+            "scopes": ["weight", "openid"]
+        }
+    ],
+    "users": [
+        {
+            "userId": "12345678",
+            "password": "verysecret#",
+            "email": "user@email.com",
+            "name": "Email Juarez"
         }
     ],
     "expiryTime": 3600,

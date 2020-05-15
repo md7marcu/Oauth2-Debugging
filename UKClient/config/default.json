@@ -9,6 +9,12 @@
             "clientSecret": "secretsecretsecret",
             "redirectUris": ["https://localhost:3000/authorizeCallback"],
             "scopes": ["ssn", "something", "else"]
+        },
+        {
+            "clientId": "authenticate",
+            "clientSecret": "othersecret",
+            "redirectUris": ["https://localhost:3000/authorizeCallback"],
+            "scopes": ["weight"]
         }
     ],
     "authorizationCodeGrant": "authorization_code",

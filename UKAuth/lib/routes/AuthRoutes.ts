@@ -6,17 +6,14 @@ import * as buildUrl from "build-url";
 import * as Debug from "debug";
 const debug = Debug("AuthRoute");
 import * as Fs from "fs";
-import { sign, VerifyOptions } from "jsonwebtoken";
+import { sign } from "jsonwebtoken";
 import * as path from "path";
 import IClient from "interfaces/IClient";
+import Db from "../db/db";
+import IIdToken from "interfaces/IIdToken";
+import { IVerifyOptions } from "../interfaces/IVerifyOptions";
+import { IRequest } from "../interfaces/IRequest";
 
-interface IRequest extends Request {
-    clientId: string;
-}
-interface IVerifyOptions extends VerifyOptions {
-    iss: string;
-    aud: string;
-}
 export class AuthRoutes {
 
     public routes(app): void {
@@ -54,7 +51,7 @@ export class AuthRoutes {
 
             // 2. Verify Redirect URL
             let redirectUrl = (req?.query?.redirect_uri ?? "").toString();
-            let invalidRedirectUri = findIndex(client?.redirectUris ?? "", (r) => { return r === redirectUrl;}) < 0;
+            let invalidRedirectUri = findIndex(client?.redirectUris ?? "", (r) => { return r === redirectUrl; }) < 0;
 
             if (config.verifyRedirectUrl && invalidRedirectUri) {
                 res.render("authError",
@@ -62,12 +59,12 @@ export class AuthRoutes {
                     title: "Authorization Errors",
                     error: "Invalid Redirect URL.",
                 });
-
                 return;
             }
 
             // 3. Verify Scope/s
             let queryScopes = ((req?.query?.scopes ?? "") as string).split(",");
+            let openIdFlow = this.openIdFlow(queryScopes);
             let invalidScopes = this.verifyScope(queryScopes, client.scopes);
 
             if (config.validateScope && invalidScopes) {
@@ -84,8 +81,14 @@ export class AuthRoutes {
             let requestId = Guid.create();
             db.saveRequest(requestId, req?.query);
 
-            // 5. Serve page and let user approve authorization
-            res.render("allowRequest", { client: client, requestId: requestId.toString(), scopes: queryScopes});
+            // 5. Serve page and let user approve authorization (and possibly authenticate)
+            let renderData = { client: client, requestId: requestId.toString(), scopes: queryScopes};
+
+            if (openIdFlow) {
+                res.render("authenticate", renderData);
+            } else {
+                res.render("allowRequest", renderData);
+            }
         });
 
         app.post("/allowRequest", async(req: Request, res: Response) => {
@@ -132,6 +135,8 @@ export class AuthRoutes {
                     // Create the authorization code and save it with the request
                     let codeId = this.getRandomString(config.authorizationCodeLength);
                     db.saveAuthorizationCode(codeId, { request: query, scopes: selectedScopes});
+                    // User is fake authenticated - update the record with seconds since EPOCH
+                    db.updateUser(config.users[0].name,  Math.round((new Date()).getTime() / 1000), codeId);
 
                     let queryParams: any;
 
@@ -215,14 +220,20 @@ export class AuthRoutes {
 
                     if (config.verifyClientId && authorizationCode.request.client_id === clientId) {
                         let payload = this.buildAccessToken(authorizationCode.scopes);
-                        let accessToken = this.signAccessToken(payload);
+                        let accessToken = this.signToken(payload);
+                        let openIdConnectFlow = this.isOpenIdConnectFlow(authorizationCode.request.scopes);
 
                         if (config.saveAccessToken) {
                             db.saveAccessToken({accessToken: accessToken, clientId: clientId});
                         }
                         let refreshToken = this.getRandomString(config.refreshTokenLength);
                         db.saveRefreshToken(refreshToken, clientId, authorizationCode.scopes);
-                        res.status(200).send({access_token: accessToken, refresh_token: refreshToken });
+                        let resultPayload = {access_token: accessToken, refresh_token: refreshToken };
+
+                        if (openIdConnectFlow) {
+                            (resultPayload as any).id_token = this.signToken(this.buildIdToken(req.body.authorization_code, db));
+                        }
+                        res.status(200).send(resultPayload);
 
                         return;
                     } else {
@@ -232,7 +243,7 @@ export class AuthRoutes {
                         return;
                     }
                 } else {
-                    debug(`Could not find code in storage ${authorizationCode}`)
+                    debug(`Could not find code in storage ${authorizationCode}`);
                     res.status(400).send("Invalid grant.");
 
                 return;
@@ -252,7 +263,7 @@ export class AuthRoutes {
                         return;
                     }
                     let payload = this.buildAccessToken(refreshToken.scopes);
-                    let accessToken = this.signAccessToken(payload);
+                    let accessToken = this.signToken(payload);
 
                     if (config.saveAccessToken) {
                         db.saveAccessToken(accessToken, clientId);
@@ -275,6 +286,29 @@ export class AuthRoutes {
         });
     }
 
+    isOpenIdConnectFlow(scopes: string): boolean {
+        return scopes.split(",").findIndex((x) => x === "openid") > -1;
+    }
+
+    // Create an id token for OpenId Connect flow
+    buildIdToken(authorizationCode: any, db: Db): IVerifyOptions {
+        let user = db.getUserFromCode(authorizationCode);
+
+        return {
+            iss: config.issuer,
+            sub: user.userId,
+            aud: config.clients[1].client_id,
+            exp: Math.floor(Date.now() / 1000) + config.expiryTime,
+            iat: Math.floor(Date.now() / 1000) - config.createdTimeAgo,
+            auth_time: user.lastAuthenticated,
+            nonce: user.nonce,
+        };
+    }
+
+    openIdFlow(queryScopes: string[]) {
+        return queryScopes.includes("openid");
+    }
+
     // Verify that the client has all scopes that's asked for
     verifyScope(askedScopes: string[], clientScopes: string[]): boolean {
        return difference(askedScopes, clientScopes).length > 0;
@@ -285,7 +319,7 @@ export class AuthRoutes {
         return [...Array(tokenLength)].map(i => (~~(Math.random() * 36)).toString(36)).join("");
     }
 
-    buildAccessToken(scopes) {
+    buildAccessToken(scopes): IVerifyOptions {
         let payload = {
             iss: config.issuer,
             aud: config.audience,
@@ -302,7 +336,7 @@ export class AuthRoutes {
         return payload;
     }
 
-    signAccessToken(options: IVerifyOptions): string {
+    signToken(options: IVerifyOptions): string {
         return sign(options, Fs.readFileSync(path.join(__dirname, "../../config/key.pem")), { algorithm: config.algorithm });
     }
 }

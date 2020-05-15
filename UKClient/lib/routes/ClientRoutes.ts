@@ -6,6 +6,7 @@ const debug = Debug("ClientRoutes");
 import * as request from "request-promise-native";
 import Db from "../db/db";
 import ISecret from "interfaces/ISecret";
+import { find } from "lodash";
 
 interface IServiceDto {
     statusCode: number;
@@ -39,15 +40,50 @@ export class ClientRoutes {
                     redirect_uri: config.clients[0].redirectUris[0],
             };
 
+            (queryParams as any).state = this.getRandomString(16);
+
             if (config.verifyState) {
-                (queryParams as any).state = this.getRandomString(16);
                 db.pushState((queryParams as any).state);
             }
+            // For managing two "clients" within the same client
+            db.saveClientState(config.clients[0].clientId, (queryParams as any).state);
 
             let authorize = buildUrl(config.authorizationEndpoint, { queryParams: queryParams });
             debug(`Redirecting to ${authorize}`);
             res.redirect(authorize);
         });
+
+        app.get("/authenticate", async(req: Request, res: Response) => {
+            debug("authenticate endpoint called.");
+            let scopes = config.clients[1].scopes;
+            scopes.push("openid");
+
+            let queryParams = {
+                    response_type: config.responseType,
+                    scopes: scopes,
+                    client_id: config.clients[1].clientId,
+                    redirect_uri: config.clients[1].redirectUris[0],
+            };
+
+            let state = this.getRandomString(16);
+
+            if (config.verifyState) {
+                (queryParams as any).state = state;
+                db.pushState((queryParams as any).state);
+            }
+            // For managing two "clients" within the same client
+            db.saveClientState(config.clients[1].clientId, state);
+
+            let authorize = buildUrl(config.authorizationEndpoint, { queryParams: queryParams });
+            debug(`Redirecting to ${authorize}`);
+            res.redirect(authorize);
+        });
+
+                // aud has to be clientid
+        // issuer must match iss claim (obtained during discovery)
+        // current time must be before exp
+        // iat
+        // send back nonce
 
         app.get("/authorizeCallback", async(req: Request, res: Response) => {
             debug(`authorizeCallback endpoint called.`);
@@ -60,7 +96,7 @@ export class ClientRoutes {
             let code: string = (req?.query?.code ?? undefined) as string;
             let state: string = (req?.query?.state ?? undefined) as string;
 
-            if (config.verifyState){
+            if (config.verifyState) {
                 let savedState: string = db.popState();
 
                 if (state !== savedState) {
@@ -71,12 +107,16 @@ export class ClientRoutes {
                 }
             }
 
+            // need to be able to grab client[1] for openidc
+            let clientId = db.getClientFromState(state);
+            let client = find(config.clients, {"clientId": clientId});
+
             let data = {
                     grant_type: config.authorizationCodeGrant,
                     authorization_code: code,
-                    client_id: config.clients[0].clientId,
-                    client_secret: config.clients[0].clientSecret,
-                    redirect_uri: config.clients[0].redirectUris[0],
+                    client_id: client.clientId,
+                    client_secret: client.clientSecret,
+                    redirect_uri: client.redirectUris[0],
                 };
 
             let accessTokenEndpoint = this.getAccessTokenEndpoint();
@@ -89,11 +129,12 @@ export class ClientRoutes {
 
             request(options)
             .then((body) => {
-                db.saveSecret({accessToken: body.access_token, refreshToken: body.refresh_token, code: code});
+                db.saveSecret({accessToken: body.access_token, refreshToken: body.refresh_token, idToken: body.id_token, code: code});
                 res.render("index", {
                     title: config.title,
                     accessToken: body.access_token,
                     refreshToken: body.refresh_token,
+                    idToken: body.id_token,
                     authorizationCode: code,
                 });
             })
@@ -138,14 +179,14 @@ export class ClientRoutes {
                         return;
                     }
 
-                    if (result.hasError){
+                    if (result.hasError) {
                         res.render("clientError", result.payload);
                         return;
                     }
                     // Get the new access token
                     secret = db.getSecretWithRefresh(secret.refreshToken);
 
-                    try{
+                    try {
                         protectedResourceResult = await this.getProtectedResouce(db, secret.accessToken);
                     } catch (err) {
                         res.render("clientError", {title: config.title, error: "Unknown Error."});
@@ -162,6 +203,7 @@ export class ClientRoutes {
                 if (!protectedResourceResult.hasError && payload) {
                     payload.accessToken = secret.accessToken;
                     payload.refreshToken = secret.refreshToken;
+                    payload.idToken = secret.idToken;
                     payload.authorizationCode = secret.code;
                     res.render("index", payload);
 

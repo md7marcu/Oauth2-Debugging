@@ -1,6 +1,7 @@
 import { expect, assert } from "chai";
 import Db from "../lib/db/db";
 import { Guid } from "guid-typescript";
+import { config } from "node-config-ts";
 
 describe ("Static Db implementation", () => {
 
@@ -86,5 +87,15 @@ describe ("Static Db implementation", () => {
         // tslint:disable-next-line:no-unused-expression
         expect(db.validRefreshToken(refreshToken)).to.be.true;
         assert.equal(db.getRefreshToken(refreshToken).clientId, clientId);
+    });
+
+    it ("Should return a user given an authorization code", () => {
+        let db = new Db();
+        let code = "123";
+        db.updateUser(config.users[0].name, 0, code);
+
+        let user = db.getUserFromCode(code);
+
+        expect(user.name).to.equal(config.users[0].name);
     });
 });
