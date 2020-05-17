@@ -128,7 +128,7 @@ export class ClientRoutes {
             .then((body) => {
                 db.saveSecret({accessToken: body.access_token, refreshToken: body.refresh_token, idToken: body.id_token, code: code});
 
-                if (!this.verifyIdToken(body.id_token, clientId)) {
+                if (this.openIdFlow(client.scopes) && !this.verifyIdToken(body.id_token, clientId)) {
                     res.render("clientError", { title: config.title, error: "Id token is invalid."} );
                 }
                 res.render("index", {
@@ -169,6 +169,10 @@ export class ClientRoutes {
                     return;
                 }
 
+                if (protectedResourceResult.hasError && protectedResourceResult.statusCode === 403) {
+                    res.render("clientError", protectedResourceResult.payload);
+                    return;
+                }
                 // If we're getting an (assumed) 401 from an expired token, we get a new one and retry the operation
                 if (protectedResourceResult.hasError && protectedResourceResult.statusCode === 401) {
                     let result: IServiceDto;
@@ -336,5 +340,9 @@ export class ClientRoutes {
     getRandomString(tokenLength: number): string {
         // tslint:disable-next-line:no-bitwise
         return [...Array(tokenLength)].map(i => (~~(Math.random() * 36)).toString(36)).join("");
+    }
+
+    openIdFlow(scopes: string): boolean {
+        return scopes.includes("openid");
     }
 }

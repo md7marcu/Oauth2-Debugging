@@ -45,5 +45,6 @@
     "saveAccessToken": true,
     "authorizationCodeGrant": "authorization_code",
     "refreshTokenGrant": "refresh_token",
-    "verifyState": true
+    "verifyState": true,
+    "useMongo": false
 }

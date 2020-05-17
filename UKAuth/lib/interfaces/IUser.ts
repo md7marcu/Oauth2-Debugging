@@ -1,9 +1,10 @@
 export default interface IUser {
-    userId: string;
+    userId?: string;
     password: string;
     email: string;
     name: string;
-    code: string;
-    nonce: string;
-    lastAuthenticated: string;
+    tokens?: string[];
+    code?: string;
+    nonce?: string;
+    lastAuthenticated?: string;
 }
