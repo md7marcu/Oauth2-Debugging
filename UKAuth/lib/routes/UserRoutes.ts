@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import * as Debug from "debug";
 import { IApplication } from "../app";
-const debug = Debug("UserRoutes");
+const debug = Debug("AuthServer:UserRoutes:");
 import Db from "../db/db";
 import { compare } from "bcryptjs";
 

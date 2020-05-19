@@ -4,7 +4,7 @@ import { findIndex, difference } from "lodash";
 import { Guid } from "guid-typescript";
 import * as buildUrl from "build-url";
 import * as Debug from "debug";
-const debug = Debug("AuthRoute");
+const debug = Debug("AuthServer:AuthRoutes:");
 import * as Fs from "fs";
 import { sign } from "jsonwebtoken";
 import * as path from "path";

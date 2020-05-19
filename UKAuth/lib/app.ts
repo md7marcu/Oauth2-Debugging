@@ -6,7 +6,7 @@ import { UserRoutes } from "./routes/UserRoutes";
 import Db from "./db/db";
 import * as mongoose from "mongoose";
 import * as Debug from "debug";
-const debug = Debug("UKAuth");
+const debug = Debug("AuthServer:");
 import * as MockMongoose from "mock-mongoose";
 
 export interface IApplication extends express.Application {

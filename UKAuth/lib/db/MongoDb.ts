@@ -1,7 +1,7 @@
 import UserModel from "./UserModel";
 import IUser from "../interfaces/IUser";
 import * as Debug from "debug";
-const debug = Debug("MongoDB");
+const debug = Debug("AuthServer:MongoDB");
 
 export default class MongoDb {
 

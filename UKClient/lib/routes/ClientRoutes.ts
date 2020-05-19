@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import * as buildUrl from "build-url";
 import { config } from "node-config-ts";
 import * as Debug from "debug";
-const debug = Debug("ClientRoutes");
+const debug = Debug("Client:ClientRoutes");
 import * as request from "request-promise-native";
 import Db from "../db/db";
 import ISecret from "interfaces/ISecret";
