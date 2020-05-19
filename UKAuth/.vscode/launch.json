@@ -45,7 +45,10 @@
             "program": "${workspaceFolder}/lib/server.ts",
             "cwd": "${workspaceFolder}",
             "protocol": "inspector",
-            "env": { "PORT":"3002" },
+            "env": { 
+              "PORT":"3002",
+              "MONGODB_URL": "mongodb://127.0.0.1:27017"
+             },
             "outFiles": [
               "${workspaceFolder}/dist/**/*.js"
             ],
@@ -55,6 +58,10 @@
             "request": "launch",
             "name": "Debug Mocha",
             "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+            "env": {
+              "NODE_ENV":"test", 
+              "MONGODB_URL": "mongodb://127.0.0.1:27017"
+            },
             "args": [
                 "-r",
                 "ts-node/register",

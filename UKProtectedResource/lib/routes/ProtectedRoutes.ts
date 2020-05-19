@@ -30,7 +30,7 @@ export class ResourceRoutes {
             if (includes((req?.access_token as any)?.scope, "ssn")) {
                 res.send({ssn: this.ssn.toString()});
             } else {
-                res.status(403).send();
+                res.status(403).send("Unknown Scope.");
                 next("Forbidden");
             }
             debug(`sent ssn ${this.ssn}`);

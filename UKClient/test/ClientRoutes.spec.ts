@@ -1,14 +1,9 @@
 import "mocha";
 import  * as Supertest from "supertest";
 import app  from "../lib/app";
-import { VerifyOptions } from "jsonwebtoken";
 import { expect } from "chai";
 import * as path from "path";
 
-interface IVerifyOptions extends VerifyOptions {
-    iss: string;
-    aud: string;
-}
 describe("Express routes", () => {
     let db = (app as any).Db;
 

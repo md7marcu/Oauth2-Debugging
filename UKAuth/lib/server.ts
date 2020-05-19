@@ -3,7 +3,7 @@ import app from "./app";
 import * as https from "https";
 import * as fs from "fs";
 import * as Debug from "debug";
-const debug = Debug("AuthorizationServer");
+const debug = Debug("AuthServer");
 
 const PORT = process.env.PORT;
 

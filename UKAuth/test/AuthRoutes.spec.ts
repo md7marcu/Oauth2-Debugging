@@ -96,7 +96,6 @@ describe("Express routes", () => {
         .type("form");
 
         expect(response.status).to.be.equal(401);
-        expect(response.text).to.contain("Client Id and/or Client Secret.");
     });
 
     it("Should return 401 if client secret is invalid", async () => {
@@ -146,7 +145,7 @@ describe("Express routes", () => {
     it("Should return 200 and token", async () => {
         let code = "abc123";
         let clientId = config.clients[0].clientId;
-        db.saveAuthorizationCode(code, {request: {client_id: clientId, scopes: ["ssn"]}});
+        db.saveAuthorizationCode(code, {request: {client_id: clientId, scopes: "ssn"}});
 
         const response = await Supertest(app)
         .post("/token")

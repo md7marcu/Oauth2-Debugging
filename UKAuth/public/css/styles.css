@@ -13,6 +13,24 @@ body {
     padding-bottom: 10px;
   }
 
+  .username-label {
+    padding-left: 2px;  
+    font-size: 1rem; /* h6 */
+    margin-bottom: .5rem;
+    font-weight: 500;
+    line-height: 1.2;
+    color: #212529;
+    display: block;    
+  }
+
+  .password-label {
+    padding-top: 10px;  
+  }
+  
+  .scope-header {
+    padding-top: 15px;
+  }
+
   .scope-label {
     padding-left: 2px;  
     font-size: 1rem; /* h6 */

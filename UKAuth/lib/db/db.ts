@@ -2,6 +2,10 @@ import { find, remove } from "lodash";
 import { Guid } from "guid-typescript";
 import { config } from "node-config-ts";
 import IClient from "interfaces/IClient";
+import IUser from "interfaces/IUser";
+import getRandomString from "../helpers/GetRandomString";
+import { hash } from "bcryptjs";
+import MongoDb from "./MongoDb";
 
 export default class Db {
     private clients = config.clients;
@@ -9,6 +13,8 @@ export default class Db {
     private authorizationCodes = [];
     private accessTokens = [];
     private refreshTokens = [];
+    private users: [IUser] = config.users;
+    private useMongo: boolean = config.useMongo;
 
     // Return client information for given ClientId if available, else undefined
     public getClient(clientId: string): IClient {
@@ -50,7 +56,7 @@ export default class Db {
 
     public validAuthorizationCode(codeId: string): boolean {
         // tslint:disable-next-line:whitespace
-        return find(this.authorizationCodes, (c) => c.codeId === codeId) !== undefined;
+        return find(this.authorizationCodes, (c) => {return c.codeId === codeId; }) !== undefined;
     }
 
     public saveAccessToken(accessToken: string, clientId: string) {
@@ -66,7 +72,7 @@ export default class Db {
         return find(this.accessTokens, (t) => t.accessToken === accessToken);
     }
 
-    public saveRefreshToken(refreshToken: string, clientId: string, scopes: string[]){
+    public saveRefreshToken(refreshToken: string, clientId: string, scopes: string[]) {
         this.refreshTokens.push({"refreshToken": refreshToken, "clientId": clientId, "scopes": scopes});
     }
 
@@ -77,5 +83,43 @@ export default class Db {
 
     public getRefreshToken(refreshToken: string) {
         return find(this.refreshTokens, (r) => r.refreshToken === refreshToken);
+    }
+
+    public getUserFromCode(code: string): IUser {
+        return find(this.users, (r) => r.code === code);
+    }
+
+    public updateUser(name: string, sinceEpoch: number, code: string) {
+        let index = this.users.findIndex(u => u.name === name);
+        this.users[index].lastAuthenticated = sinceEpoch.toString();
+        this.users[index].code = code;
+    }
+
+    public async addUser(name: string, email: string, password: string, tokens: string[]): Promise<IUser> {
+        let hashedPassword = await hash(password, 8);
+        let user: IUser;
+
+        if (this.useMongo) {
+            user = await new MongoDb().addUser(name, email, hashedPassword, tokens);
+        } else {
+            user = {
+                userId: getRandomString(8),
+                name: name,
+                email: email,
+                password: hashedPassword,
+                tokens: tokens,
+            };
+            this.users.push(user);
+        }
+
+        return user;
+    }
+
+    public async getUser(email: string): Promise<IUser> {
+        if (this.useMongo) {
+            return await new MongoDb().getUser(email);
+        } else {
+            return find(this.users, (u) => u.email === email);
+        }
     }
 }

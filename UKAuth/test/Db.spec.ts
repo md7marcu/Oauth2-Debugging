@@ -1,8 +1,14 @@
 import { expect, assert } from "chai";
 import Db from "../lib/db/db";
 import { Guid } from "guid-typescript";
+import { config } from "node-config-ts";
+import { hash, compare} from "bcryptjs";
 
 describe ("Static Db implementation", () => {
+
+    before(() => {
+        config.useMongo = false;
+    });
 
     it ("Should return undefined if the client doesn't exist", () => {
         // tslint:disable-next-line:no-unused-expression
@@ -86,5 +92,32 @@ describe ("Static Db implementation", () => {
         // tslint:disable-next-line:no-unused-expression
         expect(db.validRefreshToken(refreshToken)).to.be.true;
         assert.equal(db.getRefreshToken(refreshToken).clientId, clientId);
+    });
+
+    it ("Should return a user given an authorization code", () => {
+        let db = new Db();
+        let code = "123";
+        db.updateUser(config.users[0].name, 0, code);
+
+        let user = db.getUserFromCode(code);
+
+        expect(user.name).to.equal(config.users[0].name);
+    });
+
+    it ("Should add a user and return it", async () => {
+        let db = new Db();
+        let user = await db.addUser("ken", "ken@ken.nu", "ken", undefined);
+
+        expect(user.name).to.equal("ken");
+    });
+
+    it ("Should hash the password when adding a user", async () => {
+        let db = new Db();
+        let user = await db.addUser("test", "test@test.se", "test", undefined);
+
+        let isMatch = await compare("test", user.password);
+
+        // tslint:disable-next-line:no-unused-expression
+        expect(isMatch).to.be.true;
     });
 });
