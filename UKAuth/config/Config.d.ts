@@ -21,6 +21,7 @@ declare module "node-config-ts" {
     accessTokenLength: number
     refreshTokenLength: number
     clients: Client[]
+    users: User[]
     expiryTime: number
     createdTimeAgo: number
     addNonceToAccessToken: boolean
@@ -28,6 +29,13 @@ declare module "node-config-ts" {
     authorizationCodeGrant: string
     refreshTokenGrant: string
     verifyState: boolean
+    useMongo: boolean
+  }
+  interface User {
+    userId: string
+    password: string
+    email: string
+    name: string
   }
   interface Client {
     clientId: string
