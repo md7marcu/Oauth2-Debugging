@@ -5,7 +5,8 @@
   "scripts": {
     "install": "(cd UKAUth && npm install) & (cd UKClient && npm install) & (cd UKProtectedResource && npm install)",
     "build": "(cd UKAUth && npm run build) & (cd UKClient && npm run build) & (cd UKProtectedResource && npm run build)",
-    "clean": "(cd UKAUth && rm -rf ./dist) & (cd UKClient && rm -rf ./dist) & (cd UKProtectedResource && rm -rf ./dist)"
+    "clean": "(cd UKAUth && rm -rf ./dist) & (cd UKClient && rm -rf ./dist) & (cd UKProtectedResource && rm -rf ./dist)",
+    "test": "(cd UKAUth && npm run test) & (cd UKClient && npm run test) & (cd UKProtectedResource && npm run test)"
   },
   "dependencies": {
   }
