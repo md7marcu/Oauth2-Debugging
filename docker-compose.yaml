@@ -17,6 +17,24 @@ services:
           - 9228:9229
         working_dir: /usr/src/app
         command: "npm run map-debug"
+    public-client:
+        environment:
+            - protectedResource=https://protected-resource:3001/ssn
+            - accessTokenEndpoint=https://authorization-server:3002/token
+            - authorizationEndpoint=https://authorization-server:3002/authorize
+        links: 
+            - "protected-resource"
+            - "authorization-server"
+        networks:
+            - ukauth-network
+        build: ./UKPublicClient
+        volumes:
+            - ./UKPublicClient/dist:/usr/src/app/dist
+            - /usr/src/app/node_modules
+        ports:
+            - 4200:4200
+        working_dir: /usr/src/app
+        command: "npm run start-docker"
     client:
         environment:
             - protectedResource=https://protected-resource:3001/ssn

@@ -1,5 +1,4 @@
-import { VerifyOptions } from "jsonwebtoken";
-export interface IVerifyOptions extends VerifyOptions {
+export interface IVerifyOptions {
     iss: string;
     aud: string;
     auth_time?: string;

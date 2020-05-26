@@ -11,6 +11,7 @@ declare module "node-config-ts" {
     algorithm: string
     serverCert: string
     serverKey: string
+    corsWhitelist: string[]
   }
   export const config: Config
   export type Config = IConfig

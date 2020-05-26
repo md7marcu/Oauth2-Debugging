@@ -15,10 +15,6 @@ describe("User routes", () => {
     const testPassword: string = "TestPassword";
     const testEmail: string = "TestEmail@test.nu";
 
-    afterEach(async () => {
-        await UserModel.collection.deleteMany({email: testEmail.toLowerCase()});
-    });
-
     it("Should return 200 when adding a user", async () => {
         const response = await Supertest(app)
         .post("/users/create")
