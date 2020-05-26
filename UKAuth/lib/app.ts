@@ -31,7 +31,10 @@ export class App {
         this.config();
         this.authRoutes.routes(this.app);
         this.userRoutes.routes(this.app);
-        this.mongoSetup(this.mongoUrl, this.isDev);
+
+        if (config.useMongo) {
+            this.mongoSetup(this.mongoUrl, this.isDev);
+        }
 
         if (this.isDev) {
             debug("Running in development mode.");

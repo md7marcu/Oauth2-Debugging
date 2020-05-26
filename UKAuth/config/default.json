@@ -53,6 +53,6 @@
     "authorizationCodeGrant": "authorization_code",
     "refreshTokenGrant": "refresh_token",
     "verifyState": true,
-    "useMongo": true,
+    "useMongo": false,
     "usePkce": true
 }

@@ -10,6 +10,10 @@ import { ActivatedRoute } from "@angular/router";
 import { AuthorizationServerService } from "../services/authorization-server.service";
 import ITokenRequest from "../interfaces/itokenrequest";
 import { ProtectedResourceService } from "../services/protected-resource.service";
+import { IVerifyOptions } from "../interfaces/iverifyoptions";
+import { JwtHelperService } from "@auth0/angular-jwt";
+import { HttpErrorResponse } from "@angular/common/http";
+const helper = new JwtHelperService();
 
 @Component({
   selector: "app-authenticate",
@@ -24,7 +28,7 @@ export class AuthenticateComponent implements OnInit {
   public authorizationCode: string;
   public idToken: string;
   public protectedResource: string;
-  public hasErrors: boolean;
+  private hasErrors: boolean;
   public error: string;
   private config: Config;
 
@@ -44,25 +48,31 @@ export class AuthenticateComponent implements OnInit {
   }
 
   public login(): void {
-    debug("Login.");
     this.requestAuthentication();
   }
 
   public getProtectedResource(): void {
-    debug("GetProtectedResource.");
     this.protectedResourceSerivce.get(this.accessToken).subscribe(data => {
       debug(`Result from protected resource: ${JSON.stringify(data)}`);
       this.protectedResource = data.ssn;
+    },
+    (error: HttpErrorResponse) => {
+      debug(`Got error from protected resource: ${JSON.stringify(error)}`);
+      this.setError(error.message);
     });
+  }
+
+  get HasErrors() {
+    this.hasErrors = this.error !== undefined;
+
+    return this.hasErrors;
   }
 
   private authenticationCallback = (parameters: { [name: string]: string; }) => {
     debug("AuthenticationCallback");
 
-    // TODO MPGB 5/25/20: Render errors
     if (this.config.verifyState && !this.verifyState(parameters.state)){
-      debug("Unknown state parameter.");
-      console.log("Render error page: unknown state.");
+      this.setError("Unknown state parameter.");
 
       return;
     }
@@ -77,9 +87,14 @@ export class AuthenticateComponent implements OnInit {
     };
 
     this.authorizationServerService.getToken(body).subscribe(response => {
+      const error = this.verifyIdToken(response.id_token, this.config.clients[0].clientId);
       this.accessToken = response.access_token;
       this.refreshToken = response.refresh_token;
       this.idToken = response.id_token;
+    },
+    (error: HttpErrorResponse) => {
+      debug(`GetToken returned an error: ${JSON.stringify(error)}`);
+      this.setError(error.message);
     });
   }
 
@@ -108,6 +123,34 @@ export class AuthenticateComponent implements OnInit {
       window.localStorage.setItem("codeChallenge", codeChallenge);
     }
     window.location.href = this.config.authorizationEndpoint + `?${queryString.stringify(queryParams)}`;
+  }
+
+  private verifyIdToken(idToken: string, clientId: string): boolean {
+    debug("Verify Id Token");
+    const decodedToken = helper.decodeToken(idToken);
+
+    if (this.config.verifyIss && (decodedToken as IVerifyOptions).iss !== this.config.issuer) {
+      this.setError("Invalid issuer (iss) in Id Token.");
+      return false;
+    }
+    if (this.config.verifyAud && (decodedToken as IVerifyOptions).aud !== clientId) {
+      this.setError("Invalid audience (aud) in Id Token.");
+      return false;
+    }
+    if (this.config.verifyIat &&  (decodedToken as IVerifyOptions).iat > Math.floor(Date.now() / 1000)) {
+      this.setError("Invalid creation time (iat) in Id Token.");
+      return false;
+    }
+    if (this.config.verifyExp && (decodedToken as IVerifyOptions).exp < Math.floor(Date.now() / 1000)) {
+      this.setError("Id Token is expired.");
+      return false;
+    }
+    return true;
+  }
+
+  private setError(error: string): void{
+    debug(`Got error: ${error}`);
+    this.error = error;
   }
 
   private verifyState(state: string): boolean {

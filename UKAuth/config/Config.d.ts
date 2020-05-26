@@ -21,6 +21,7 @@ declare module "node-config-ts" {
     accessTokenLength: number
     refreshTokenLength: number
     clients: Client[]
+    corsWhitelist: string[]
     users: User[]
     expiryTime: number
     createdTimeAgo: number
@@ -30,6 +31,7 @@ declare module "node-config-ts" {
     refreshTokenGrant: string
     verifyState: boolean
     useMongo: boolean
+    usePkce: boolean
   }
   interface User {
     userId: string
@@ -39,9 +41,10 @@ declare module "node-config-ts" {
   }
   interface Client {
     clientId: string
-    clientSecret: string
+    clientSecret?: string
     redirectUris: string[]
     scopes: string[]
+    public?: boolean
   }
   export const config: Config
   export type Config = IConfig

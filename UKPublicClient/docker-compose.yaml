@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  client:
+    build: .
+    volumes:
+      - /usr/src/app/node_modules
+    ports:
+      - 4200:4200
+    command: npm run start-docker

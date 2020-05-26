@@ -1,26 +1,30 @@
 <div class="jumbotron" style="height: calc(95vh);">
   <div class="container-fluid">
     <h1 class="display-4">Public Client</h1>
-    <div *ngIf="!hasErrors">
+    <div *ngIf="!HasErrors">
       <ul class="list-group list-group-flush">
         <li class="list-group-item">
           <h5>Authorization Code</h5>
           <h6>{{authorizationCode}}</h6>
+          <h6 *ngIf="!authorizationCode" class="error-outline">No Authorization Code</h6>
         </li>
         <li class="list-group-item">
           <h5>Access Token</h5>
           <h6>{{accessToken}}</h6>
+          <h6 *ngIf="!accessToken" class="error-outline">No Access Token</h6>
         </li>
         <li class="list-group-item">
           <h5>Refresh Token</h5>        
           <h6 >{{refreshToken}}</h6>
+          <h6 *ngIf="!refreshToken" class="error-outline">No Refresh Token</h6>
         </li>
         <li class="list-group-item">
           <h5>Id Token</h5>
           <h6>{{idToken}}</h6>
+          <h6 *ngIf="!idToken" class="error-outline">No Id Token</h6>
         </li>
         <li class="list-group-item">
-          <h5>Protected Resource</h5>
+          <h4>Protected Resource</h4>
           <h6>{{protectedResource}}</h6>
         </li>
       </ul>
@@ -31,7 +35,7 @@
         <button class="btn btn-primary m-3" (click)="getProtectedResource()">Get Protected Resource</button>
       </p>
   </div>
-  <div *ngIf="hasErrors">
+  <div *ngIf="HasErrors">
     <ul class="list-group list-group-flush">
       <li class="list-group-item">
         <h5 class="my-errors">{{ error }}</h5>

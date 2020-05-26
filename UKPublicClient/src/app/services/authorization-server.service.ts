@@ -20,6 +20,8 @@ export class AuthorizationServerService {
   }
 
   public getToken(body: ITokenRequest): Observable<ITokenResponse> {
+    debug(`Request to getToken ${JSON.stringify(body)}`);
+
     return this.http.post<ITokenResponse>(this.config.accessTokenEndpoint, body);
   }
 }

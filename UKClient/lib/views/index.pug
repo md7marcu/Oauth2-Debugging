@@ -24,19 +24,11 @@ block content
                         else 
                             h6.error-outline No Refresh Token
                     li.list-group-item
-                        h5 Id Token
-                        if idToken  
-                            h6.token #{idToken}
-                        else
-                            h6.error-outline No Id Token
-                    li.list-group-item
                         h4 Protected Resource
                         if protectedResource                        
                             h6 SSN: #{protectedResource}
-                p
-                    // a.btn.btn-primary.mr-5(href="/alive")  One Click
+                p                 
                     a.btn.btn-primary.mr-3(href="/authorize") Get Token
-                    a.btn.btn-primary.mr-3(href="/authenticate") Get Token (OIDC)
                     // TODO: Thou shalt not pass tokens/codes/secrets as a query parameters
                     // https://owasp.org/www-community/vulnerabilities/Information_exposure_through_query_strings_in_url
                     a.btn.btn-primary(href=`/getResource?accessToken=${accessToken}`) Get Protected Resource

@@ -7,9 +7,6 @@ import * as request from "request-promise-native";
 import Db from "../db/db";
 import ISecret from "interfaces/ISecret";
 import { find } from "lodash";
-import * as jwt from "jsonwebtoken";
-import * as fs from "fs";
-import { IVerifyOptions } from "interfaces/IVerifyOptions";
 
 interface IServiceDto {
     statusCode: number;
@@ -48,34 +45,7 @@ export class ClientRoutes {
             if (config.verifyState) {
                 db.pushState((queryParams as any).state);
             }
-            // For managing two "clients" within the same client
             db.saveClientState(config.clients[0].clientId, (queryParams as any).state);
-
-            let authorize = buildUrl(config.authorizationEndpoint, { queryParams: queryParams });
-            debug(`Redirecting to ${authorize}`);
-            res.redirect(authorize);
-        });
-
-        app.get("/authenticate", async(req: Request, res: Response) => {
-            debug("authenticate endpoint called.");
-            let scopes = config.clients[1].scopes;
-            scopes.push("openid");
-
-            let queryParams = {
-                    response_type: config.responseType,
-                    scopes: scopes,
-                    client_id: config.clients[1].clientId,
-                    redirect_uri: config.clients[1].redirectUris[0],
-            };
-
-            let state = this.getRandomString(16);
-
-            if (config.verifyState) {
-                (queryParams as any).state = state;
-                db.pushState((queryParams as any).state);
-            }
-            // For managing two "clients" within the same client
-            db.saveClientState(config.clients[1].clientId, state);
 
             let authorize = buildUrl(config.authorizationEndpoint, { queryParams: queryParams });
             debug(`Redirecting to ${authorize}`);
@@ -103,8 +73,6 @@ export class ClientRoutes {
                     return;
                 }
             }
-
-            // need to be able to grab client[1] for openidc
             let clientId = db.getClientFromState(state);
             let client = find(config.clients, {"clientId": clientId});
 
@@ -126,16 +94,12 @@ export class ClientRoutes {
 
             request(options)
             .then((body) => {
-                db.saveSecret({accessToken: body.access_token, refreshToken: body.refresh_token, idToken: body.id_token, code: code});
+                db.saveSecret({accessToken: body.access_token, refreshToken: body.refresh_token, code: code});
 
-                if (this.openIdFlow(client.scopes) && !this.verifyIdToken(body.id_token, clientId)) {
-                    res.render("clientError", { title: config.title, error: "Id token is invalid."} );
-                }
                 res.render("index", {
                     title: config.title,
                     accessToken: body.access_token,
                     refreshToken: body.refresh_token,
-                    idToken: body.id_token,
                     authorizationCode: code,
                 });
             })
@@ -208,7 +172,6 @@ export class ClientRoutes {
                 if (!protectedResourceResult.hasError && payload) {
                     payload.accessToken = secret.accessToken;
                     payload.refreshToken = secret.refreshToken;
-                    payload.idToken = secret.idToken;
                     payload.authorizationCode = secret.code;
                     res.render("index", payload);
 
@@ -306,28 +269,6 @@ export class ClientRoutes {
         }
     }
 
-    verifyIdToken(idToken: any, clientId: string) {
-        let cert = fs.readFileSync("./config/serverCert.pem");
-        let decodedToken = jwt.verify(idToken, cert);
-
-        if (config.verifyIss && (decodedToken as IVerifyOptions).iss !== config.issuer) {
-            return false;
-        }
-        if (config.verifyAud && (decodedToken as IVerifyOptions).aud !== clientId) {
-            return false;
-        }
-        if (config.verifyIat &&  (decodedToken as IVerifyOptions).iat > Math.floor(Date.now() / 1000)) {
-            return false;
-        }
-        if (config.verifyExp && (decodedToken as IVerifyOptions).exp < Math.floor(Date.now() / 1000)) {
-            return false;
-        }
-        // TODO MPGB 5/14/20: store nonce and pass it in to be verified
-        // if (config.verifyIdToken.verifyNonce ) {
-        // }
-        return true;
-    }
-
     // If we're running from the parent docker compose we need to get the host name of the protected resource
     getProtectedResourceEndpoint() {
         return process.env.protectedResource ? process.env.protectedResource : config.protectedResource;
@@ -340,9 +281,5 @@ export class ClientRoutes {
     getRandomString(tokenLength: number): string {
         // tslint:disable-next-line:no-bitwise
         return [...Array(tokenLength)].map(i => (~~(Math.random() * 36)).toString(36)).join("");
-    }
-
-    openIdFlow(scopes: string): boolean {
-        return scopes.includes("openid");
     }
 }
