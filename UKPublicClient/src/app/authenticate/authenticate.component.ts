@@ -7,13 +7,16 @@ import Config from "../../../config/Config";
 import settings from "../../../config/default.json";
 import * as queryString from "query-string";
 import { ActivatedRoute } from "@angular/router";
-import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { AuthorizationServerService } from "../services/authorization-server.service";
+import ITokenRequest from "../interfaces/itokenrequest";
+import { ProtectedResourceService } from "../services/protected-resource.service";
 
 @Component({
   selector: "app-authenticate",
   templateUrl: "./authenticate.component.html",
   styleUrls: ["./authenticate.component.css"]
 })
+
 export class AuthenticateComponent implements OnInit {
   title = "UKPublicClient";
   public accessToken: string;
@@ -21,15 +24,18 @@ export class AuthenticateComponent implements OnInit {
   public authorizationCode: string;
   public idToken: string;
   public protectedResource: string;
+  public hasErrors: boolean;
+  public error: string;
   private config: Config;
 
   constructor(private router: ActivatedRoute,
-              private http: HttpClient) {
+              private authorizationServerService: AuthorizationServerService,
+              private protectedResourceSerivce: ProtectedResourceService) {
+    this.hasErrors = false;
     this.config = Object.assign(new Config(), settings);
   }
 
   public ngOnInit(): void{
-    console.log(this.router.pathFromRoot);
 
     if (this.router?.snapshot?.url[0]?.path === "callback") {
       this.authorizationCode = this.router.snapshot.queryParams.code;
@@ -44,17 +50,7 @@ export class AuthenticateComponent implements OnInit {
 
   public getProtectedResource(): void {
     debug("GetProtectedResource.");
-    this.getResource();
-  }
-
-  private getResource() {
-
-    const headers = new HttpHeaders({
-      "Content-Type": "application/json",
-      Authorization: "Bearer " + this.accessToken
-    });
-
-    this.http.get<any>(this.config.protectedResource, { headers }).subscribe(data => {
+    this.protectedResourceSerivce.get(this.accessToken).subscribe(data => {
       debug(`Result from protected resource: ${JSON.stringify(data)}`);
       this.protectedResource = data.ssn;
     });
@@ -72,7 +68,7 @@ export class AuthenticateComponent implements OnInit {
     }
     const codeChallenge = window.localStorage.getItem("codeChallenge");
 
-    const body = {
+    const body: ITokenRequest = {
       grant_type: this.config.authorizationCodeGrant,
       authorization_code: parameters?.code,
       client_id: this.config.clients[0].clientId,
@@ -80,17 +76,11 @@ export class AuthenticateComponent implements OnInit {
       code_challenge: codeChallenge
     };
 
-    this.http.post<any>(this.config.accessTokenEndpoint, body).subscribe(data => {
-      debug(`Result from token endpoint: ${JSON.stringify(data)}`);
-      console.log(`Post result ${JSON.stringify(data)}`);
-      this.accessToken = data.access_token;
-      this.refreshToken = data.refresh_token;
-      this.idToken = data.id_token;
+    this.authorizationServerService.getToken(body).subscribe(response => {
+      this.accessToken = response.access_token;
+      this.refreshToken = response.refresh_token;
+      this.idToken = response.id_token;
     });
-  }
-
-  private verifyState(state: string): boolean {
-    return window.localStorage.getItem("state") === state;
   }
 
   private requestAuthentication(): void {
@@ -119,4 +109,9 @@ export class AuthenticateComponent implements OnInit {
     }
     window.location.href = this.config.authorizationEndpoint + `?${queryString.stringify(queryParams)}`;
   }
+
+  private verifyState(state: string): boolean {
+    return window.localStorage.getItem("state") === state;
+  }
 }
+export default AuthenticateComponent;
