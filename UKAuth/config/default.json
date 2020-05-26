@@ -29,8 +29,15 @@
             "clientSecret": "othersecret",
             "redirectUris": ["https://localhost:3000/authorizeCallback"],
             "scopes": ["weight", "openid"]
+        },
+        {
+            "clientId": "public-client",
+            "public": true,
+            "redirectUris": ["http://localhost:4200/callback", "http://localhost:4200/authenticated"],
+            "scopes": ["openid", "ssn"]
         }
     ],
+    "corsWhitelist": ["http://localhost:4200", "https://localhost:3000", "https://localhost:3002"],
     "users": [
         {
             "userId": "12345678",
@@ -46,5 +53,6 @@
     "authorizationCodeGrant": "authorization_code",
     "refreshTokenGrant": "refresh_token",
     "verifyState": true,
-    "useMongo": false
+    "useMongo": true,
+    "usePkce": true
 }
