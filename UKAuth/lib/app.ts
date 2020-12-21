@@ -1,4 +1,5 @@
 // lib/app.ts
+import { config } from "node-config-ts";
 import * as express from "express";
 import * as bodyParser from "body-parser";
 import { AuthRoutes } from "./routes/AuthRoutes";
@@ -25,17 +26,24 @@ export class App {
         (this.app as any) = express();
         // Create the "database"
         this.app.Db = new Db();
-        this.config();
+        this.localConfig();
         this.authRoutes.routes(this.app);
         this.userRoutes.routes(this.app);
         this.mongoSetup(this.mongoUrl, this.isDev);
 
         if (this.isDev) {
             debug("Running in development mode.");
+        } else if (config.settings.useMongo) {
+            debug("Using MongoDb.");
+            // If we have saved settings retrieve those and update settings object
+            this.app.Db.getSettings().then((settings) => {
+                config.settings = settings;
+                debug(`Override Settings: ${JSON.stringify(config.settings)}`);
+            });
         }
     }
 
-    private config = (): void => {
+    private localConfig = (): void => {
         // support application/json type post data
         this.app.use(bodyParser.json());
         // support application/x-www-form-urlencoded post data
@@ -65,6 +73,8 @@ export class App {
                 );
             });
         } else {
+            // Use the MongoDB drivers upsert method instead of mongooses
+            mongoose.set("useFindAndModify", false);
             mongoose.connect(connectionString, {
                 useNewUrlParser: true,
                 useCreateIndex: true,

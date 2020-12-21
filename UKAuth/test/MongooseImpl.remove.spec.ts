@@ -2,6 +2,7 @@ import "mocha";
 import { expect } from "chai";
 import { UserModel } from "../lib/db/UserModel";
 import IUser from "../lib/interfaces/IUser";
+import * as Debug from "debug";
 
 describe("Test Mongoose impl.", () => {
     let user: IUser = {
@@ -10,8 +11,12 @@ describe("Test Mongoose impl.", () => {
         email: "test@test.nu",
     };
 
+    before( async() => {
+        Debug.disable();
+    });
+
     after( () => {
-        UserModel.collection.remove({email: user.email});
+        UserModel.collection.deleteMany({email: user.email});
     });
 
     it("Should save a user", async () => {

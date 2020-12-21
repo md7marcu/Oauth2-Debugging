@@ -26,9 +26,9 @@ export class AuthRoutes {
             {
                 title: "Authorization Server",
                 endpoints: {
-                    authorizationEndpoint: config.authorizationEndpoint,
-                    accessTokenEndpoint: config.accessTokenEndpoint,
-                    aliveEndpoint: config.aliveEndpoint,
+                    authorizationEndpoint: config.settings.authorizationEndpoint,
+                    accessTokenEndpoint: config.settings.accessTokenEndpoint,
+                    aliveEndpoint: config.settings.aliveEndpoint,
                 },
             });
         });
@@ -41,7 +41,7 @@ export class AuthRoutes {
              // 1. Verify ClientId
             let client: IClient = this.db.getClient(((req?.query?.client_id ?? "") as string));
 
-            if (config.verifyClientId && !client) {
+            if (config.settings.verifyClientId && !client) {
                 res.render("authError",
                 {
                     title: "Authorization Errors",
@@ -54,7 +54,7 @@ export class AuthRoutes {
             let redirectUrl = (req?.query?.redirect_uri ?? "").toString();
             let invalidRedirectUri = findIndex(client?.redirectUris ?? "", (r) => { return r === redirectUrl; }) < 0;
 
-            if (config.verifyRedirectUrl && invalidRedirectUri) {
+            if (config.settings.verifyRedirectUrl && invalidRedirectUri) {
                 res.render("authError",
                 {
                     title: "Authorization Errors",
@@ -68,7 +68,7 @@ export class AuthRoutes {
             let openIdFlow = this.openIdFlow(queryScopes);
             let invalidScopes = this.verifyScope(queryScopes, client.scopes);
 
-            if (config.validateScope && invalidScopes) {
+            if (config.settings.validateScope && invalidScopes) {
                 res.redirect(
                     buildUrl(redirectUrl,
                     {
@@ -102,7 +102,7 @@ export class AuthRoutes {
             }
 
             // Delete request id - mitigate replay
-            if (config.clearRequestId) {
+            if (config.settings.clearRequestId) {
                 this.db.deleteRequest(requestId);
             }
 
@@ -135,7 +135,7 @@ export class AuthRoutes {
                     let client: IClient = this.db.getClient(query.client_id);
                     let invalidScopes = this.verifyScope(selectedScopes, client.scopes);
 
-                    if (config.validateScope && invalidScopes) {
+                    if (config.settings.validateScope && invalidScopes) {
                         let url = buildUrl(query.redirect_uri, { queryParams: { error: "Invalid Scope"}});
                         res.redirect(url);
 
@@ -143,14 +143,14 @@ export class AuthRoutes {
                     }
 
                     // Create the authorization code and save it with the request
-                    let codeId = getRandomString(config.authorizationCodeLength);
+                    let codeId = getRandomString(config.settings.authorizationCodeLength);
                     this.db.saveAuthorizationCode(codeId, { request: query, scopes: selectedScopes});
                     // User is fake authenticated - update the record with seconds since EPOCH
-                    this.db.updateUser(config.users[0].name,  Math.round((new Date()).getTime() / 1000), codeId);
+                    this.db.updateUser(config.settings.users[0].name,  Math.round((new Date()).getTime() / 1000), codeId);
 
                     let queryParams: any;
 
-                    if (config.verifyState) {
+                    if (config.settings.verifyState) {
                         queryParams = {
                                 queryParams: {
                                     state: query.state,
@@ -210,10 +210,10 @@ export class AuthRoutes {
             }
 
             // 2. authorizationCode request =>
-            if (req.body?.grant_type === config.authorizationCodeGrant) {
+            if (req.body?.grant_type === config.settings.authorizationCodeGrant) {
 
                 // fresh or replayed token
-                if (config.verifyCode && !this.db.validAuthorizationCode(req.body.authorization_code)) {
+                if (config.settings.verifyCode && !this.db.validAuthorizationCode(req.body.authorization_code)) {
                     debug(`Authorization Code is invalid: ${req.body.authorization_code}`);
                     res.status(401).send("Invalid code.");
 
@@ -224,19 +224,19 @@ export class AuthRoutes {
 
                 if (authorizationCode) {
                     // remove code so it cannot be reused
-                    if (config.clearAuthorizationCode) {
+                    if (config.settings.clearAuthorizationCode) {
                         this.db.deleteAuthorizationCode(req.body.authorization_code);
                     }
 
-                    if (config.verifyClientId && authorizationCode.request.client_id === clientId) {
+                    if (config.settings.verifyClientId && authorizationCode.request.client_id === clientId) {
                         let payload = this.buildAccessToken(authorizationCode.scopes);
                         let accessToken = this.signToken(payload);
                         let openIdConnectFlow = this.isOpenIdConnectFlow(authorizationCode.request.scopes);
 
-                        if (config.saveAccessToken) {
+                        if (config.settings.saveAccessToken) {
                             this.db.saveAccessToken({accessToken: accessToken, clientId: clientId});
                         }
-                        let refreshToken = getRandomString(config.refreshTokenLength);
+                        let refreshToken = getRandomString(config.settings.refreshTokenLength);
                         this.db.saveRefreshToken(refreshToken, clientId, authorizationCode.scopes);
                         let resultPayload = {access_token: accessToken, refresh_token: refreshToken };
 
@@ -258,7 +258,7 @@ export class AuthRoutes {
 
                 return;
             }
-            } else if (req.body.grant_type === config.refreshTokenGrant) {
+            } else if (req.body.grant_type === config.settings.refreshTokenGrant) {
 
                 // Check if we have the refresh token, i.e. valid refresh token
                 let refreshToken = this.db.getRefreshToken(req?.body?.refresh_token ?? "");
@@ -266,7 +266,7 @@ export class AuthRoutes {
                 if (refreshToken) {
                     debug("Verified refresh token.");
 
-                    if (config.verifyClientId && refreshToken.clientId !== clientId) {
+                    if (config.settings.verifyClientId && refreshToken.clientId !== clientId) {
                          debug("Client mismatch on refresh token.");
                          res.status(400).send("Invalid refresh token.");
 
@@ -275,7 +275,7 @@ export class AuthRoutes {
                     let payload = this.buildAccessToken(refreshToken.scopes);
                     let accessToken = this.signToken(payload);
 
-                    if (config.saveAccessToken) {
+                    if (config.settings.saveAccessToken) {
                         this.db.saveAccessToken(accessToken, clientId);
                     }
                     res.status(200).send({access_token: accessToken, refresh_token: refreshToken.refreshToken });
@@ -332,11 +332,11 @@ export class AuthRoutes {
         let user = db.getUserFromCode(authorizationCode);
 
         return {
-            iss: config.issuer,
+            iss: config.settings.issuer,
             sub: user.userId,
             aud: clientId,
-            exp: Math.floor(Date.now() / 1000) + config.expiryTime,
-            iat: Math.floor(Date.now() / 1000) - config.createdTimeAgo,
+            exp: Math.floor(Date.now() / 1000) + config.settings.expiryTime,
+            iat: Math.floor(Date.now() / 1000) - config.settings.createdTimeAgo,
             auth_time: user.lastAuthenticated,
             nonce: user.nonce,
         };
@@ -353,21 +353,21 @@ export class AuthRoutes {
 
     private buildAccessToken = (scopes): IVerifyOptions => {
         let payload = {
-            iss: config.issuer,
-            aud: config.audience,
-            sub: config.subject,
-            exp: Math.floor(Date.now() / 1000) + config.expiryTime,
-            iat: Math.floor(Date.now() / 1000) - config.createdTimeAgo,
+            iss: config.settings.issuer,
+            aud: config.settings.audience,
+            sub: config.settings.subject,
+            exp: Math.floor(Date.now() / 1000) + config.settings.expiryTime,
+            iat: Math.floor(Date.now() / 1000) - config.settings.createdTimeAgo,
             scope: scopes,
         };
 
-        if (config.addNonceToToken) {
+        if (config.settings.addNonceToToken) {
             (payload as any).jti = getRandomString(16);
         }
         return payload;
     }
 
     private signToken = (options: IVerifyOptions): string => {
-        return sign(options, Fs.readFileSync(path.join(__dirname, "../../config/key.pem")), { algorithm: config.algorithm });
+        return sign(options, Fs.readFileSync(path.join(__dirname, "../../config/key.pem")), { algorithm: config.settings.algorithm });
     }
 }

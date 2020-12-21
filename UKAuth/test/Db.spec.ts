@@ -3,11 +3,13 @@ import Db from "../lib/db/db";
 import { Guid } from "guid-typescript";
 import { config } from "node-config-ts";
 import { hash, compare} from "bcryptjs";
+import * as Debug from "debug";
 
 describe ("Static Db implementation", () => {
 
     before(() => {
-        config.useMongo = false;
+        config.settings.useMongo = false;
+        Debug.disable();
     });
 
     it ("Should return undefined if the client doesn't exist", () => {
@@ -97,11 +99,11 @@ describe ("Static Db implementation", () => {
     it ("Should return a user given an authorization code", () => {
         let db = new Db();
         let code = "123";
-        db.updateUser(config.users[0].name, 0, code);
+        db.updateUser(config.settings.users[0].name, 0, code);
 
         let user = db.getUserFromCode(code);
 
-        expect(user.name).to.equal(config.users[0].name);
+        expect(user.name).to.equal(config.settings.users[0].name);
     });
 
     it ("Should add a user and return it", async () => {

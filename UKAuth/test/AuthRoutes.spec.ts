@@ -2,7 +2,7 @@ import "mocha";
 import * as Supertest from "supertest";
 import app  from "../lib/app";
 import { VerifyOptions } from "jsonwebtoken";
-import * as Fs from "fs";
+import * as Debug from "debug";
 import { expect } from "chai";
 import { config } from "node-config-ts";
 import * as path from "path";
@@ -14,6 +14,10 @@ interface IVerifyOptions extends VerifyOptions {
 }
 describe("Express routes", () => {
     let db = (app as any).Db;
+
+    before( async() => {
+        Debug.disable();
+    });
 
     beforeEach(() => {
         // Setup fake rendering
@@ -39,7 +43,7 @@ describe("Express routes", () => {
     });
 
     it("Should render error on authorize endpoint when called without redirect url", async () => {
-        const response = await Supertest(app).get("/authorize").query({ client_id: config.clients[0].clientId });
+        const response = await Supertest(app).get("/authorize").query({ client_id: config.settings.clients[0].clientId });
 
         expect(response.status).to.be.equal(200);
         expect(response.text).to.contain("Invalid Redirect URL.");
@@ -48,8 +52,8 @@ describe("Express routes", () => {
     it("Should redirect to callback when authorize endpoint called with invalid scope", async () => {
         const response = await Supertest(app).get("/authorize").query(
             {
-                client_id: config.clients[0].clientId,
-                redirect_uri: config.clients[0].redirectUris[0],
+                client_id: config.settings.clients[0].clientId,
+                redirect_uri: config.settings.clients[0].redirectUris[0],
                 scopes: ["non existing"],
             });
 
@@ -60,8 +64,8 @@ describe("Express routes", () => {
     it("Should render allowRequest page when call is successful", async () => {
         const response = await Supertest(app).get("/authorize").query(
             {
-                client_id: config.clients[0].clientId,
-                redirect_uri: config.clients[0].redirectUris[0],
+                client_id: config.settings.clients[0].clientId,
+                redirect_uri: config.settings.clients[0].redirectUris[0],
                 scopes: ["ssn"],
             });
 
@@ -104,7 +108,7 @@ describe("Express routes", () => {
         .type("form")
         .send(
             {
-                client_id: config.clients[0].clientId,
+                client_id: config.settings.clients[0].clientId,
                 client_secret: "invalid secret",
             });
 
@@ -118,8 +122,8 @@ describe("Express routes", () => {
         .type("form")
         .send(
             {
-                client_id: config.clients[0].clientId,
-                client_secret: config.clients[0].clientSecret,
+                client_id: config.settings.clients[0].clientId,
+                client_secret: config.settings.clients[0].clientSecret,
             });
 
         expect(response.status).to.be.equal(400);
@@ -132,9 +136,9 @@ describe("Express routes", () => {
         .type("form")
         .send(
             {
-                client_id: config.clients[0].clientId,
-                client_secret: config.clients[0].clientSecret,
-                grant_type: config.authorizationCodeGrant,
+                client_id: config.settings.clients[0].clientId,
+                client_secret: config.settings.clients[0].clientSecret,
+                grant_type: config.settings.authorizationCodeGrant,
                 code: "invalidCode",
             });
 
@@ -144,7 +148,7 @@ describe("Express routes", () => {
 
     it("Should return 200 and token", async () => {
         let code = "abc123";
-        let clientId = config.clients[0].clientId;
+        let clientId = config.settings.clients[0].clientId;
         db.saveAuthorizationCode(code, {request: {client_id: clientId, scopes: "ssn"}});
 
         const response = await Supertest(app)
@@ -153,8 +157,8 @@ describe("Express routes", () => {
         .send(
             {
                 client_id: clientId,
-                client_secret: config.clients[0].clientSecret,
-                grant_type: config.authorizationCodeGrant,
+                client_secret: config.settings.clients[0].clientSecret,
+                grant_type: config.settings.authorizationCodeGrant,
                 authorization_code: code,
             });
 
@@ -165,7 +169,7 @@ describe("Express routes", () => {
     // Not very good test, hacks too much
     it("Should return 400 when called with refresh_token grant with erroneous clientId", async () => {
         let code = "abc123";
-        let clientId = config.clients[0].clientId;
+        let clientId = config.settings.clients[0].clientId;
         db.saveAuthorizationCode(code, {request: {clientId: clientId, scopes: ["ssn"]}});
         db.saveRefreshToken("cba321", "3232", ["ssn"]);
 
@@ -175,8 +179,8 @@ describe("Express routes", () => {
         .send(
             {
                 client_id: clientId,
-                client_secret: config.clients[0].clientSecret,
-                grant_type: config.refreshTokenGrant,
+                client_secret: config.settings.clients[0].clientSecret,
+                grant_type: config.settings.refreshTokenGrant,
                 refresh_token: "cba321",
             });
 
@@ -186,7 +190,7 @@ describe("Express routes", () => {
 
     it("Should return new access token upon refresh", async () => {
         let code = "abc123";
-        let clientId = config.clients[0].clientId;
+        let clientId = config.settings.clients[0].clientId;
         let refreshToken = "cba321-2";
         db.saveAuthorizationCode(code, {request: {clientId: clientId, scopes: ["ssn"]}});
         db.saveRefreshToken(refreshToken, clientId, ["ssn"]);
@@ -197,8 +201,8 @@ describe("Express routes", () => {
         .send(
             {
                 client_id: clientId,
-                client_secret: config.clients[0].clientSecret,
-                grant_type: config.refreshTokenGrant,
+                client_secret: config.settings.clients[0].clientSecret,
+                grant_type: config.settings.refreshTokenGrant,
                 refresh_token: refreshToken,
             });
 

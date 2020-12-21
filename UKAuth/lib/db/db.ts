@@ -3,18 +3,20 @@ import { Guid } from "guid-typescript";
 import { config } from "node-config-ts";
 import IClient from "interfaces/IClient";
 import IUser from "interfaces/IUser";
+import ISettings from "interfaces/ISettings";
 import getRandomString from "../helpers/GetRandomString";
 import { hash } from "bcryptjs";
 import MongoDb from "./MongoDb";
 
 export default class Db {
-    private clients = config.clients;
+    private clients = config.settings.clients;
     private requests = [];
     private authorizationCodes = [];
     private accessTokens = [];
     private refreshTokens = [];
-    private users: [IUser] = config.users;
-    private useMongo: boolean = config.useMongo;
+    private users: [IUser] = config.settings.users;
+    private useMongo: boolean = config.settings.useMongo;
+    private mongoSettings: String = config.settings.mongoSettings;
 
     // Return client information for given ClientId if available, else undefined
     public getClient(clientId: string): IClient {
@@ -120,6 +122,22 @@ export default class Db {
             return await new MongoDb().getUser(email);
         } else {
             return find(this.users, (u) => u.email === email);
+        }
+    }
+
+    public async getSettings(): Promise<ISettings> {
+        if (this.useMongo) {
+            return await new MongoDb().getSettings();
+        } else {
+            return config.settings;
+        }
+    }
+
+    public async upsertSettings(settings: ISettings): Promise<ISettings> {
+        if (this.useMongo) {
+            return await new MongoDb().upsertSettings(settings);
+        } else {
+            return config.settings;
         }
     }
 }

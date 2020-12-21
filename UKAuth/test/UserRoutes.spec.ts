@@ -5,6 +5,7 @@ import { VerifyOptions } from "jsonwebtoken";
 import { expect } from "chai";
 import { Response } from "express";
 import UserModel from "../lib/db/UserModel";
+import * as Debug from "debug";
 
 interface IVerifyOptions extends VerifyOptions {
     iss: string;
@@ -14,6 +15,10 @@ describe("User routes", () => {
     const testName: string = "TestName";
     const testPassword: string = "TestPassword";
     const testEmail: string = "TestEmail@test.nu";
+
+    before( async() => {
+        Debug.disable();
+    });
 
     afterEach(async () => {
         await UserModel.collection.deleteMany({email: testEmail.toLowerCase()});
