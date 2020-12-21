@@ -14,6 +14,7 @@ import { IVerifyOptions } from "../interfaces/IVerifyOptions";
 import { IRequest } from "../interfaces/IRequest";
 import getRandomString from "../helpers/GetRandomString";
 import { compare } from "bcryptjs";
+import verifyCodeChallenge from "../helpers/VerifyCodeChallenge";
 
 export class AuthRoutes {
     private db;
@@ -62,9 +63,13 @@ export class AuthRoutes {
                 });
                 return;
             }
+            let queryScopes: string[];
 
             // 3. Verify Scope/s
-            let queryScopes = ((req?.query?.scopes ?? "") as string).split(",");
+            if (req?.query?.scopes) {
+                let tmpScopes = Array.isArray(req.query.scopes) ? req.query.scopes.toString() : ((req.query.scopes ?? "") as string);
+                queryScopes = tmpScopes.split(",");
+            }
             let openIdFlow = this.openIdFlow(queryScopes);
             let invalidScopes = this.verifyScope(queryScopes, client.scopes);
 
@@ -118,8 +123,9 @@ export class AuthRoutes {
 
             // If the user allowed the request
             if (req.body.allow) {
+                const openIdRequest = req.body.openIdRequest;
 
-                if (req.body.openIdRequest && !req.body.authenticated) {
+                if (openIdRequest && !req.body.authenticated) {
                     res.render("authError",
                     {
                         title: "Authentication Error",
@@ -142,11 +148,11 @@ export class AuthRoutes {
                         return;
                     }
 
-                    // Create the authorization code and save it with the request
-                    let codeId = getRandomString(config.settings.authorizationCodeLength);
-                    this.db.saveAuthorizationCode(codeId, { request: query, scopes: selectedScopes});
-                    // User is fake authenticated - update the record with seconds since EPOCH
-                    this.db.updateUser(config.settings.users[0].name,  Math.round((new Date()).getTime() / 1000), codeId);
+                    let codeId = getRandomString(config.authorizationCodeLength);
+                    const request = { request: query, scopes: selectedScopes };
+
+                    this.db.saveAuthorizationCode(codeId, request);
+                    this.db.updateUser(config.users[0].name,  Math.round((new Date()).getTime() / 1000), codeId);
 
                     let queryParams: any;
 
@@ -181,8 +187,9 @@ export class AuthRoutes {
             let clientId: string;
             let clientSecret: string;
 
-            if (req.body.client_id && req.body.client_secret) {
+            if (req.body.client_id) {
                 clientId = req.body.client_id;
+                // if this is a public client client_secret will not be defined
                 clientSecret = req.body.client_secret;
             } else {
                 // TODO: Check header for clientId and secret
@@ -202,7 +209,7 @@ export class AuthRoutes {
 
                 return;
             }
-            if (client.clientSecret !== clientSecret) {
+            if (!client.public && client.clientSecret !== clientSecret) {
                 debug(`Invalid client secret: ${clientSecret}`);
                 res.status(401).send("Invalid client secret.");
 
@@ -233,7 +240,23 @@ export class AuthRoutes {
                         let accessToken = this.signToken(payload);
                         let openIdConnectFlow = this.isOpenIdConnectFlow(authorizationCode.request.scopes);
 
+<<<<<<< HEAD
                         if (config.settings.saveAccessToken) {
+=======
+                        // Verify PCKE - Stored hash should match hash of given code challenge
+                        if (client.public && openIdConnectFlow && config.usePkce) {
+                            const codeChallenge = authorizationCode.request.code_challenge;
+                            const reqCodeChallenge = req.body.code_challenge;
+
+                            if (!verifyCodeChallenge(codeChallenge, reqCodeChallenge)){
+                                debug(`CodeChallenge does not matched stored CodeChallenge: ${reqCodeChallenge} / ${codeChallenge}`);
+                                res.status(400).send("Invalid Code Challenge");
+                                return;
+                            }
+                        }
+
+                        if (config.saveAccessToken) {
+>>>>>>> master
                             this.db.saveAccessToken({accessToken: accessToken, clientId: clientId});
                         }
                         let refreshToken = getRandomString(config.settings.refreshTokenLength);
@@ -297,7 +320,7 @@ export class AuthRoutes {
     }
 
     private authenticateUser = async(req: IRequest, res: Response, next: NextFunction): Promise<any> => {
-        // Authenticate the user if this is an open id request, see disclaimer where it is set.
+
         if (req?.body?.openIdRequest) {
             let username = req?.body?.username;
             let user = await this.db.getUser(username);
@@ -323,8 +346,10 @@ export class AuthRoutes {
         next();
     }
 
-    private isOpenIdConnectFlow = (scopes: string): boolean => {
-        return scopes.split(",").findIndex((x) => x === "openid") > -1;
+    private isOpenIdConnectFlow = (scopes: any): boolean => {
+        let tmpScopes = Array.isArray(scopes) ? scopes.toString() : scopes;
+
+        return tmpScopes.split(",").findIndex((x) => x === "openid") > -1;
     }
 
     // Create an id token for OpenId Connect flow

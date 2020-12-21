@@ -9,6 +9,8 @@ import * as mongoose from "mongoose";
 import * as Debug from "debug";
 const debug = Debug("AuthServer:");
 import * as MockMongoose from "mock-mongoose";
+import * as cors from "cors";
+import { config } from "node-config-ts";
 
 export interface IApplication extends express.Application {
     Db: Db;
@@ -27,9 +29,13 @@ export class App {
         // Create the "database"
         this.app.Db = new Db();
         this.localConfig();
+        this.corsConfig();
         this.authRoutes.routes(this.app);
         this.userRoutes.routes(this.app);
-        this.mongoSetup(this.mongoUrl, this.isDev);
+
+        if (config.useMongo) {
+            this.mongoSetup(this.mongoUrl, this.isDev);
+        }
 
         if (this.isDev) {
             debug("Running in development mode.");
@@ -55,6 +61,21 @@ export class App {
         // App engine - html
         this.app.set("view engine", "pug");
         // this.app.engine("html", pug));
+    }
+
+    private corsConfig = () => {
+        const whitelist = config.corsWhitelist;
+        const corsOptions = {
+          origin: function (origin, callback) {
+            // origin is undefined server - server
+            if (whitelist.indexOf(origin) !== -1 || !origin) {
+              callback(undefined, true);
+            } else {
+              callback(new Error("Cors error."));
+            }
+          },
+        };
+        this.app.use(cors(corsOptions));
     }
 
     private mongoSetup = (connectionString: string, isDev: boolean): void => {

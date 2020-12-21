@@ -1,6 +1,7 @@
 export default interface IClient {
     clientId: string;
-    clientSecret: string;
+    clientSecret?: string;
     redirectUris: [string];
     scopes: [string];
+    public?: boolean;
 }

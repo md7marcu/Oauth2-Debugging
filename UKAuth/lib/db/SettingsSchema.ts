@@ -26,8 +26,9 @@ export const SettingsSchema: Schema = new Schema({
             clientSecret: String,
             redirectUris: [String],
             scopes: [String],
-        }
+        },
     ],
+    corsWhitelist: [String],
     users: [
         {
             userId: String,
@@ -44,4 +45,5 @@ export const SettingsSchema: Schema = new Schema({
     refreshTokenGrant: String,
     verifyState: Boolean,
     useMongo: Boolean,
+    usePkce: Boolean,
 });

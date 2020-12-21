@@ -7,5 +7,6 @@
     "ignoreExpiration": false,
     "algorithm": "RS256",
     "serverCert": "/config/serverCert.pem",
-    "serverKey": "../UKAuth/config/key.pem"
+    "serverKey": "../UKAuth/config/key.pem",
+    "corsWhitelist": ["http://localhost:4200", "https://localhost:3000", "https://localhost:3002"]
 }
