@@ -10,7 +10,6 @@ import * as Debug from "debug";
 const debug = Debug("AuthServer:");
 import * as MockMongoose from "mock-mongoose";
 import * as cors from "cors";
-import { config } from "node-config-ts";
 
 export interface IApplication extends express.Application {
     Db: Db;
@@ -64,7 +63,7 @@ export class App {
     }
 
     private corsConfig = () => {
-        const whitelist = config.corsWhitelist;
+        const whitelist = config.settings.corsWhitelist;
         const corsOptions = {
           origin: function (origin, callback) {
             // origin is undefined server - server

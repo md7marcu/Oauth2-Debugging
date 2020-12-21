@@ -148,11 +148,11 @@ export class AuthRoutes {
                         return;
                     }
 
-                    let codeId = getRandomString(config.authorizationCodeLength);
+                    let codeId = getRandomString(config.settings.authorizationCodeLength);
                     const request = { request: query, scopes: selectedScopes };
 
                     this.db.saveAuthorizationCode(codeId, request);
-                    this.db.updateUser(config.users[0].name,  Math.round((new Date()).getTime() / 1000), codeId);
+                    this.db.updateUser(config.settings.users[0].name,  Math.round((new Date()).getTime() / 1000), codeId);
 
                     let queryParams: any;
 
@@ -240,9 +240,6 @@ export class AuthRoutes {
                         let accessToken = this.signToken(payload);
                         let openIdConnectFlow = this.isOpenIdConnectFlow(authorizationCode.request.scopes);
 
-<<<<<<< HEAD
-                        if (config.settings.saveAccessToken) {
-=======
                         // Verify PCKE - Stored hash should match hash of given code challenge
                         if (client.public && openIdConnectFlow && config.usePkce) {
                             const codeChallenge = authorizationCode.request.code_challenge;
@@ -256,7 +253,6 @@ export class AuthRoutes {
                         }
 
                         if (config.saveAccessToken) {
->>>>>>> master
                             this.db.saveAccessToken({accessToken: accessToken, clientId: clientId});
                         }
                         let refreshToken = getRandomString(config.settings.refreshTokenLength);
