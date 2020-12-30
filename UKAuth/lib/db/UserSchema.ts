@@ -26,4 +26,5 @@ export const UserSchema: Schema = new Schema({
     code: String,
     nonce: String,
     lastAuthenticated: String,
+    enabled: { type: Boolean, default: false},
 });

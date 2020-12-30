@@ -2,6 +2,9 @@
 /* eslint-disable */
 declare module "node-config-ts" {
   interface IConfig {
+    settings: Settings
+  }
+  interface Settings {
     issuer: string
     audience: string
     subject: string
@@ -32,6 +35,7 @@ declare module "node-config-ts" {
     verifyState: boolean
     useMongo: boolean
     usePkce: boolean
+    overrideId: string
   }
   interface User {
     userId: string

@@ -4,6 +4,7 @@ export default interface IUser {
     email: string;
     name: string;
     tokens?: string[];
+    enabled?: boolean;
     code?: string;
     nonce?: string;
     lastAuthenticated?: string;

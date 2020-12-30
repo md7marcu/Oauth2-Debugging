@@ -2,11 +2,10 @@ import "mocha";
 import * as Supertest from "supertest";
 import app  from "../lib/app";
 import { VerifyOptions } from "jsonwebtoken";
-import * as Fs from "fs";
+import * as Debug from "debug";
 import { expect } from "chai";
 import { config } from "node-config-ts";
 import * as path from "path";
-import { Guid } from "guid-typescript";
 
 interface IVerifyOptions extends VerifyOptions {
     iss: string;
@@ -14,6 +13,10 @@ interface IVerifyOptions extends VerifyOptions {
 }
 describe("OIDC authorization code flow", () => {
     let db = (app as any).Db;
+
+    before( async() => {
+        Debug.disable();
+    });
 
     beforeEach(() => {
         // Setup fake rendering
@@ -37,8 +40,8 @@ describe("OIDC authorization code flow", () => {
     it("Should start the OIDC flow if called with code and scope equal to openid", async () => {
         const response = await Supertest(app).get("/authorize").query(
             {
-                client_id: config.clients[1].clientId,
-                redirect_uri: config.clients[1].redirectUris[0],
+                client_id: config.settings.clients[1].clientId,
+                redirect_uri: config.settings.clients[1].redirectUris[0],
                 response_type: "code",
                 scopes: ["openid"],
             });

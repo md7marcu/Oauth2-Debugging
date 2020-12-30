@@ -47,7 +47,8 @@
             "protocol": "inspector",
             "env": { 
               "PORT":"3002",
-              "MONGODB_URL": "mongodb://127.0.0.1:27017"
+              "MONGODB_URL": "mongodb://127.0.0.1:27017/auth",
+              "DEBUG": "AuthServer*",
              },
             "outFiles": [
               "${workspaceFolder}/dist/**/*.js"
@@ -60,7 +61,7 @@
             "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
             "env": {
               "NODE_ENV":"test", 
-              "MONGODB_URL": "mongodb://127.0.0.1:27017"
+              "MONGODB_URL": "mongodb://127.0.0.1:27017/auth"
             },
             "args": [
                 "-r",
