@@ -16,7 +16,6 @@ export default class Db {
     private refreshTokens = [];
     private users: [IUser] = config.settings.users;
     private useMongo: boolean = config.settings.useMongo;
-    private mongoSettings: String = config.settings.mongoSettings;
 
     // Return client information for given ClientId if available, else undefined
     public getClient(clientId: string): IClient {
@@ -110,6 +109,7 @@ export default class Db {
                 email: email,
                 password: hashedPassword,
                 tokens: tokens,
+                enabled: true,
             };
             this.users.push(user);
         }

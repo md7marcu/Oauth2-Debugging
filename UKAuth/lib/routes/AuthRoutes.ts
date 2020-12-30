@@ -33,11 +33,9 @@ export class AuthRoutes {
                 },
             });
         });
-
         app.get("/alive", async(req: IRequest, res: Response) => {
             res.send("Success!");
         });
-
         app.get("/authorize", async(req: Request, res: Response) => {
              // 1. Verify ClientId
             let client: IClient = this.db.getClient(((req?.query?.client_id ?? "") as string));
@@ -245,7 +243,7 @@ export class AuthRoutes {
                             const codeChallenge = authorizationCode.request.code_challenge;
                             const reqCodeChallenge = req.body.code_challenge;
 
-                            if (!verifyCodeChallenge(codeChallenge, reqCodeChallenge)){
+                            if (!verifyCodeChallenge(codeChallenge, reqCodeChallenge)) {
                                 debug(`CodeChallenge does not matched stored CodeChallenge: ${reqCodeChallenge} / ${codeChallenge}`);
                                 res.status(400).send("Invalid Code Challenge");
                                 return;
@@ -322,7 +320,7 @@ export class AuthRoutes {
             let user = await this.db.getUser(username);
             let password = req?.body?.password ? req?.body?.password : "";
 
-            if (!user || password === "") {
+            if (!user || password === "" || !user.enabled) {
                 req.body.authenticated = false;
             } else {
                 req.body.authenticated = await compare(password, user?.password);

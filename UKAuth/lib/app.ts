@@ -10,6 +10,7 @@ import * as Debug from "debug";
 const debug = Debug("AuthServer:");
 import * as MockMongoose from "mock-mongoose";
 import * as cors from "cors";
+import { ViewRoutes } from "./routes/ViewRoutes";
 
 export interface IApplication extends express.Application {
     Db: Db;
@@ -20,6 +21,7 @@ export class App {
     public Db: Db;
     private authRoutes: AuthRoutes = new AuthRoutes();
     private userRoutes: UserRoutes = new UserRoutes();
+    private viewRoutes: ViewRoutes = new ViewRoutes();
     private mongoUrl: string = process.env.MONGODB_URL;
     private isDev: boolean = process.env.NODE_ENV === "test";
 
@@ -31,20 +33,21 @@ export class App {
         this.corsConfig();
         this.authRoutes.routes(this.app);
         this.userRoutes.routes(this.app);
+        this.viewRoutes.routes(this.app);
+        debug.log = console.log.bind(console);
 
-        if (config.useMongo) {
-            this.mongoSetup(this.mongoUrl, this.isDev);
-        }
-
-        if (this.isDev) {
-            debug("Running in development mode.");
-        } else if (config.settings.useMongo) {
+        if (config.settings.useMongo) {
             debug("Using MongoDb.");
+            this.mongoSetup(this.mongoUrl, this.isDev);
             // If we have saved settings retrieve those and update settings object
             this.app.Db.getSettings().then((settings) => {
                 config.settings = settings;
                 debug(`Override Settings: ${JSON.stringify(config.settings)}`);
             });
+        }
+
+        if (this.isDev) {
+            debug("Running in development mode.");
         }
     }
 

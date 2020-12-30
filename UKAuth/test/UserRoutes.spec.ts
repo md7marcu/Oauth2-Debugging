@@ -29,9 +29,9 @@ describe("User routes", () => {
         .post("/users/create")
         .type("form")
         .send({
-            name: "TestName",
-            email: "TestEmail@tests.nu",
-            password: "TestPassword",
+            name: testName,
+            email: testEmail,
+            password: testPassword,
         });
         expect(response.status).to.be.equal(200);
         expect(response.body.name).to.be.equal("TestName");

@@ -18,6 +18,17 @@
         "authorizationCodeLength": 16,
         "accessTokenLength": 16,
         "refreshTokenLength": 64,
+        "corsWhitelist": ["http://localhost:4200", "https://localhost:3000", "https://localhost:3002"],
+        "expiryTime": 3600,
+        "createdTimeAgo": 30,
+        "addNonceToAccessToken": true,
+        "saveAccessToken": true,
+        "authorizationCodeGrant": "authorization_code",
+        "refreshTokenGrant": "refresh_token",
+        "verifyState": true,
+        "useMongo": true,
+        "usePkce": true,
+        "overrideId": "31337",
         "clients": [
             {
                 "clientId": "ukauth-client",
@@ -38,7 +49,6 @@
                 "scopes": ["openid", "ssn"]
             }
         ],
-        "corsWhitelist": ["http://localhost:4200", "https://localhost:3000", "https://localhost:3002"],
         "users": [
             {
                 "userId": "12345678",
@@ -46,16 +56,6 @@
                 "email": "user@email.com",
                 "name": "Email Juarez"
             }
-        ],
-        "expiryTime": 3600,
-        "createdTimeAgo": 30,
-        "addNonceToAccessToken": true,
-        "saveAccessToken": true,
-        "authorizationCodeGrant": "authorization_code",
-        "refreshTokenGrant": "refresh_token",
-        "verifyState": true,
-        "useMongo": false,
-        "usePkce": true,
-        "overrideId": "31337"
+        ]
     }
 }

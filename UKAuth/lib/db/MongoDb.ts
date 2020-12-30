@@ -6,6 +6,7 @@ import * as Debug from "debug";
 import { config } from "node-config-ts";
 
 const debug = Debug("AuthServer:MongoDB");
+debug.log = console.log.bind(console);
 
 export default class MongoDb {
 
@@ -19,6 +20,7 @@ export default class MongoDb {
                 password:
                 password,
                 tokens: tokens,
+                enabled: false,
             }).save()
                 .catch((error) => {
                     debug(`Failed to add user with email ${email}. err: ${JSON.stringify(error)}`);

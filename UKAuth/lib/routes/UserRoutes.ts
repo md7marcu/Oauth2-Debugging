@@ -20,7 +20,10 @@ export class UserRoutes {
         app.post("/users/authenticate", async (req: Request, res: Response) => {
             debug (`Login User: ${JSON.stringify(req.body)}`);
             let user = await db.getUser(req?.body?.email);
-            let validPassword = await compare(req?.body?.password, user.password);
+            let validPassword = undefined;
+
+            if (req?.body?.password && user?.password)
+                validPassword = await compare(req?.body?.password, user?.password);
 
             if (!validPassword) {
                 res.status(401).send("Wrong credentials supplied.");

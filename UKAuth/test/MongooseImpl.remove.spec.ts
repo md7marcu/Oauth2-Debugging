@@ -4,7 +4,7 @@ import { UserModel } from "../lib/db/UserModel";
 import IUser from "../lib/interfaces/IUser";
 import * as Debug from "debug";
 
-describe("Test Mongoose impl.", () => {
+describe.skip("Test Mongoose impl.", () => {
     let user: IUser = {
         name: "Test",
         password: "secret",
@@ -15,7 +15,7 @@ describe("Test Mongoose impl.", () => {
         Debug.disable();
     });
 
-    after( () => {
+    afterEach( () => {
         UserModel.collection.deleteMany({email: user.email});
     });
 
@@ -33,5 +33,12 @@ describe("Test Mongoose impl.", () => {
         }).exec();
 
         expect(originalCount + 1).to.be.equal(newCount);
+    });
+
+    it("Added user should not be enabled", async () => {
+        let userModel = await new UserModel(user).save();
+
+        // tslint:disable-next-line:no-unused-expression
+        expect(userModel.enabled).to.be.false;
     });
 });
