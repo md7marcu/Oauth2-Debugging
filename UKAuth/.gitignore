@@ -282,3 +282,4 @@ dist/
 *.pem
 coverage/
 .nyc_output/
+.env

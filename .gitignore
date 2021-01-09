@@ -282,3 +282,4 @@ __pycache__/
 coverage/
 dist/
 .nyc_output/
+UKAuth/config/.env
