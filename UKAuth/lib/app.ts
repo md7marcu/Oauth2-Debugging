@@ -1,4 +1,5 @@
 // lib/app.ts
+import { config } from "node-config-ts";
 import * as express from "express";
 import * as bodyParser from "body-parser";
 import { AuthRoutes } from "./routes/AuthRoutes";
@@ -9,7 +10,7 @@ import * as Debug from "debug";
 const debug = Debug("AuthServer:");
 import * as MockMongoose from "mock-mongoose";
 import * as cors from "cors";
-import { config } from "node-config-ts";
+import { ViewRoutes } from "./routes/ViewRoutes";
 
 export interface IApplication extends express.Application {
     Db: Db;
@@ -20,6 +21,7 @@ export class App {
     public Db: Db;
     private authRoutes: AuthRoutes = new AuthRoutes();
     private userRoutes: UserRoutes = new UserRoutes();
+    private viewRoutes: ViewRoutes = new ViewRoutes();
     private mongoUrl: string = process.env.MONGODB_URL;
     private isDev: boolean = process.env.NODE_ENV === "test";
 
@@ -27,13 +29,21 @@ export class App {
         (this.app as any) = express();
         // Create the "database"
         this.app.Db = new Db();
+        this.localConfig();
         this.corsConfig();
-        this.config();
         this.authRoutes.routes(this.app);
         this.userRoutes.routes(this.app);
+        this.viewRoutes.routes(this.app);
+        debug.log = console.log.bind(console);
 
-        if (config.useMongo) {
+        if (config.settings.useMongo) {
+            debug("Using MongoDb.");
             this.mongoSetup(this.mongoUrl, this.isDev);
+            // If we have saved settings retrieve those and update settings object
+            this.app.Db.getSettings().then((settings) => {
+                config.settings = settings;
+                debug(`Override Settings: ${JSON.stringify(config.settings)}`);
+            });
         }
 
         if (this.isDev) {
@@ -41,7 +51,7 @@ export class App {
         }
     }
 
-    private config = (): void => {
+    private localConfig = (): void => {
         // support application/json type post data
         this.app.use(bodyParser.json());
         // support application/x-www-form-urlencoded post data
@@ -56,7 +66,7 @@ export class App {
     }
 
     private corsConfig = () => {
-        const whitelist = config.corsWhitelist;
+        const whitelist = config.settings.corsWhitelist;
         const corsOptions = {
           origin: function (origin, callback) {
             // origin is undefined server - server
@@ -86,6 +96,8 @@ export class App {
                 );
             });
         } else {
+            // Use the MongoDB drivers upsert method instead of mongooses
+            mongoose.set("useFindAndModify", false);
             mongoose.connect(connectionString, {
                 useNewUrlParser: true,
                 useCreateIndex: true,
