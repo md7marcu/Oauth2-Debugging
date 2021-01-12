@@ -283,3 +283,4 @@ coverage/
 dist/
 .nyc_output/
 UKAuth/config/.env
+UKAuth/.vscode/launch.json

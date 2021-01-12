@@ -4,5 +4,7 @@
         "**/.project": true,
         "**/.settings": true,
         "**/.factorypath": true
-    }
+    },
+    "window.title": "${rootName}${separator}${activeEditorShort}"
 }
+ 
