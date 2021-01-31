@@ -76,7 +76,7 @@ export class AuthenticateComponent implements OnInit {
 
       return;
     }
-    const codeChallenge = window.localStorage.getItem("codeChallenge");
+    const codeChallenge = window.sessionStorage.getItem("codeChallenge");
 
     const body: ITokenRequest = {
       grant_type: this.config.authorizationCodeGrant,
@@ -113,14 +113,14 @@ export class AuthenticateComponent implements OnInit {
 
     if (this.config.verifyState) {
         (queryParams as any).state = state;
-        window.localStorage.setItem("state", state);
+        window.sessionStorage.setItem("state", state);
     }
     const codeChallenge = getRandomString(16);
-    const hasdhedCodeChallenge = getRandomSha256(codeChallenge);
+    const hashedCodeChallenge = getRandomSha256(codeChallenge);
 
     if (this.config.usePkce) {
-      (queryParams as any).code_challenge = hasdhedCodeChallenge;
-      window.localStorage.setItem("codeChallenge", codeChallenge);
+      (queryParams as any).code_challenge = hashedCodeChallenge;
+      window.sessionStorage.setItem("codeChallenge", codeChallenge);
     }
     window.location.href = this.config.authorizationEndpoint + `?${queryString.stringify(queryParams)}`;
   }
@@ -154,7 +154,7 @@ export class AuthenticateComponent implements OnInit {
   }
 
   private verifyState(state: string): boolean {
-    return window.localStorage.getItem("state") === state;
+    return window.sessionStorage.getItem("state") === state;
   }
 }
 export default AuthenticateComponent;

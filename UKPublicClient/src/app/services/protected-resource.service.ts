@@ -17,11 +17,11 @@ export class ProtectedResourceService {
   }
 
   public get(token: string): Observable<any> {
-    const headers = new HttpHeaders({
-      "Content-TYpe": "application/json",
-      Authorization: "Bearer " + token
-    });
+     const headers = new HttpHeaders({
+       "Content-Type": "application/json",
+       Authorization: `Bearer ${token}`
+     });
 
-    return this.http.get<string>(this.config.protectedResource, { headers });
+     return this.http.get<string>(this.config.protectedResource, { headers });
   }
 }

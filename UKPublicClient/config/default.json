@@ -2,20 +2,23 @@
     "issuer": "authorize.ultrakompis.com",
     "audience": "api.ultrakompis.com",
     "responseType": "code",
-    "authorizationEndpoint": "https://localhost:3002/authorize",
-    "accessTokenEndpoint": "https://localhost:3002/token",
-    "protectedResource":   "https://localhost:3001/ssn",
+    "authorizationEndpoint": "https://192.168.86.127:3002/authorize",
+    "accessTokenEndpoint": "https://192.168.86.127:3002/token",
+    "protectedResource":   "https://192.168.86.127:3001/ssn",
+    "cauthorizationEndpoint": "https://192.168.86.64:3002/authorize",
+    "caccessTokenEndpoint": "https://192.168.86.64:3002/token",
+    "cprotectedResource":   "https://192.168.86.64:3001/ssn",
     "clients": [
         {
             "clientId": "public-client",
             "public": true,
-            "redirectUris": ["http://localhost:4200/callback", "http://localhost:4200/authenticated"],
-            "scopes": ["openid", "ssn"]
+            "redirectUris": ["http://192.168.86.127:4200/callback", "http://192.168.86.127:4200/authenticated", "http://localhost:4200/callback", "http://localhost:4200/authenticated"],
+            "scopes": ["openid"]
         }
     ],
     "authorizationCodeGrant": "authorization_code",
     "refreshTokenGrant": "refresh_token",
-    "verifyState": true,
+    "verifyState": false,
     "verifyIss": true,
     "verifyAud": true,
     "verifyIat": true,
