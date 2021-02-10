@@ -6,6 +6,6 @@ export const getRandomSha256 = (randomString: string): string => {
     const sha256String = sha256(encodedString);
     const base64String = naclUtil.encodeBase64(sha256String);
 
-    return base64String;
+    return base64String.replace(/\=+$/, "").replace(/\+/g, "-").replace(/\//g, "_");
 };
 export default getRandomSha256;
