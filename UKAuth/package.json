@@ -38,7 +38,7 @@
     "node-config-ts": "^3.0.4",
     "nyc": "^15.0.1",
     "path": "^0.12.7",
-    "pug": "^2.0.4",
+    "pug": "^3.0.1",
     "tweetnacl-util": "^0.15.1",
     "typescript": "^3.8.3",
     "validator": "^13.0.0"
