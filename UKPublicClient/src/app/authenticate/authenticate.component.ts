@@ -76,14 +76,14 @@ export class AuthenticateComponent implements OnInit {
 
       return;
     }
-    const codeChallenge = window.sessionStorage.getItem("codeChallenge");
+    const codeVerifier = window.sessionStorage.getItem("codeVerifier");
 
     const body: ITokenRequest = {
       grant_type: this.config.authorizationCodeGrant,
       authorization_code: parameters?.code,
       client_id: this.config.clients[0].clientId,
       redirect_uri: this.config.clients[0].redirectUris[1],
-      code_challenge: codeChallenge
+      code_verifier: codeVerifier
     };
 
     this.authorizationServerService.getToken(body).subscribe(response => {
@@ -115,12 +115,12 @@ export class AuthenticateComponent implements OnInit {
         (queryParams as any).state = state;
         window.sessionStorage.setItem("state", state);
     }
-    const codeChallenge = getRandomString(16);
-    const hashedCodeChallenge = getRandomSha256(codeChallenge);
+    const codeVerifier = getRandomString(16);
+    const hashedCodeVerifier = getRandomSha256(codeVerifier);
 
     if (this.config.usePkce) {
-      (queryParams as any).code_challenge = hashedCodeChallenge;
-      window.sessionStorage.setItem("codeChallenge", codeChallenge);
+      (queryParams as any).code_verifier = hashedCodeVerifier;
+      window.sessionStorage.setItem("codeVerifier", codeVerifier);
     }
     window.location.href = this.config.authorizationEndpoint + `?${queryString.stringify(queryParams)}`;
   }

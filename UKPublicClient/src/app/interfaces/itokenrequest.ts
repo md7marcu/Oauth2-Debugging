@@ -3,5 +3,5 @@ export default interface ITokenRequest {
     authorization_code: string;
     client_id: string;
     redirect_uri: string;
-    code_challenge: string;
+    code_verifier: string;
 }
