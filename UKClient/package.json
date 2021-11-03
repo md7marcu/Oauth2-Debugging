@@ -40,7 +40,7 @@
     "request": "^2.88.2",
     "request-promise-native": "^1.0.8",
     "typescript": "^3.8.3",
-    "validator": "^13.0.0"
+    "validator": "^13.7.0"
   },
   "devDependencies": {
     "@types/chai": "^4.2.11",
