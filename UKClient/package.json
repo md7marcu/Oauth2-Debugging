@@ -49,7 +49,7 @@
     "@types/supertest": "^2.0.8",
     "chai": "^4.2.0",
     "jsonwebtoken": "^8.5.1",
-    "mocha": "^7.1.1",
+    "mocha": "^10.2.0",
     "nyc": "^15.0.1",
     "source-map-support": "^0.5.19",
     "supertest": "^4.0.2",
