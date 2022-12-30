@@ -54,7 +54,7 @@
     "@types/pug": "^2.0.4",
     "@types/supertest": "^2.0.8",
     "chai": "^4.2.0",
-    "mocha": "^7.1.1",
+    "mocha": "^10.2.0",
     "nodemon": "^1.19.4",
     "source-map-support": "^0.5.19",
     "supertest": "^4.0.2",
